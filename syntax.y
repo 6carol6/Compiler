@@ -12,6 +12,7 @@
 /*declared tokens*/
 %token <type_int> INT
 %token <type_float> FLOAT
+%token ID
 %token PLUS MINUS STAR DIV
 %token OCT HEX
 %token SEMI COMMA DOT
@@ -23,7 +24,19 @@
 %token STRUCT RETURN IF ELSE WHILE
 
 /*declared non-terminals*/
-%type <type_double> Exp Factor Term
+//%type <type_double> Exp
+
+/*Associativity*/
+%left LP RP LB RB DOT
+%right NOT// MINUS
+%left STAR DIV
+%left PLUS MINUS
+%left RELOP
+%left AND
+%left OR
+%right ASSIGNOP
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 
 %%
 /*High-Lever Definitions*/
@@ -72,7 +85,7 @@ StmtList	:	Stmt StmtList
 Stmt		:	Exp SEMI
 		|	CompSt
 		|	RETURN Exp SEMI
-		|	IF LP Exp RP Stmt
+		|	IF LP Exp RP Stmt	%prec LOWER_THAN_ELSE
 		|	IF LP Exp RP Stmt ELSE Stmt
 		|	WHILE LP Exp RP Stmt
 		;
@@ -111,3 +124,9 @@ Exp		:	Exp ASSIGNOP Exp
 Args		:	Exp COMMA Args
 		|	Exp
 		;
+%%
+#include "lex.yy.c"
+
+yyerror(char* msg){
+	fprintf(stderr, "error: %s\n", msg);
+}
