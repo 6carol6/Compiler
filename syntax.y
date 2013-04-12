@@ -1,43 +1,33 @@
 %{
 	#include <stdio.h>
+	#include "lex.yy.c"
 %}
 
 /*declared types*/
-%union{
-	int type_int;
-	float type_float;
-	double type_double;
-}
+%union {struct Node* treeNode;};
 
 /*declared tokens*/
-%token <type_int> INT
-%token <type_float> FLOAT
-%token ID
-%token PLUS MINUS STAR DIV
-%token OCT HEX
-%token SEMI COMMA DOT
-%token ASSIGNOP
-%token RELOP
-%token AND OR NOT
-%token TYPE
-%token LP RP LB RB LC RC
-%token STRUCT RETURN IF ELSE WHILE
-
-/*declared non-terminals*/
-//%type <type_double> Exp
+%token <treeNode> INT
+%token <treeNode> FLOAT
+%token <treeNode> ID
+%token <treeNode> OCT HEX
+%token <treeNode> SEMI COMMA
+%token <treeNode> LC RC
+%token <treeNode> TYPE STRUCT RETURN IF WHILE
 
 /*Associativity*/
-%left LP RP LB RB DOT
-%right NOT// MINUS
-%left STAR DIV
-%left PLUS MINUS
-%left RELOP
-%left AND
-%left OR
-%right ASSIGNOP
-%nonassoc LOWER_THAN_ELSE
-%nonassoc ELSE
+%left <treeNode> LP RP LB RB DOT
+%right <treeNode> NOT// MINUS
+%left <treeNode> STAR DIV
+%left <treeNode> PLUS MINUS
+%left <treeNode> RELOP
+%left <treeNode> AND
+%left <treeNode> OR
+%right <treeNode> ASSIGNOP
+%nonassoc <treeNode> LOWER_THAN_ELSE
+%nonassoc <treeNode> ELSE
 
+%locations
 %%
 /*High-Lever Definitions*/
 Program		:	ExtDefList
@@ -125,8 +115,18 @@ Args		:	Exp COMMA Args
 		|	Exp
 		;
 %%
-#include "lex.yy.c"
-
 yyerror(char* msg){
 	fprintf(stderr, "error: %s\n", msg);
+}
+int main(int argc, char** argv){
+	if(argc <= 1) return 1;
+	FILE* f = fopen(argv[1], "r");
+	if(!f){
+	  perror(argv[1]);
+	  return 1;
+	}
+	yyrestart(f);
+	yydebug = 1;
+	yyparse();
+	return 0;
 }

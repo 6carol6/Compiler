@@ -1,4 +1,6 @@
 #include "stdio.h"
+//extern YYDEBUG;
+#include "syntax.tab.h"
 extern FILE* yyin;
 
 int main(int argc, char** argv){
@@ -9,6 +11,7 @@ int main(int argc, char** argv){
 	  return 1;
 	}
 	yyrestart(f);
+	yydebug = 1;
 	yyparse();
 	return 0;
 }

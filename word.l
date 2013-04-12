@@ -1,22 +1,37 @@
+%{
+	int yycolumn = 1;
+	
+	#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;\
+	yylloc.first_column = yycolumn;yylloc.last_column = yycolumn+yyleng-1;\
+	yycolumn += yyleng;
+	#include "syntax.tab.h"
+	#include "Node.h"
+%}
+
+delim	[ \t]
+ws	{delim}+
 relop	>|>=|<|<=|==|!=
 letter	[A-Za-z]
 letter_	[A-Za-z_]
 digit	[0-9]
-OCT     0[1-7][0-7]*
-HEX	0[x|X][0-9A-Fa-f]+
-INT     0|[1-9]?{digit}*|{HEX}|{OCT}
-FLOAT	{digit}*\.?{digit}+|{digit}+\.
-ID	{letter_}({letter_}|{digit})*
+oct     0[0-7]+
+hex	0[xX][0-9A-Fa-f]+
+type	int|float
+int     0|[1-9]?{digit}*|{hex}|{oct}
+float	({int}|"")\.?{digit}+
+id	{letter_}({letter_}|{digit})*
+
 %%
-{OCT}	{ REJECT;return OCT; }
-{HEX}	{ REJECT;return HEX; }
-{INT}	{ 	
-		yylval = atoi(yytext);
-		REJECT;
-		return INT 
+{ws}	{}
+\n	{ yycolumn = 1; }
+{oct}	{ REJECT;return OCT; }
+{hex}	{ REJECT;return HEX; }
+{int}	{ 	
+		//yylval = atoi(yytext);
+//		REJECT;
+		return INT;
 	}
-{FLOAT}	{ REJECT;return FLOAT; }
-{ID}	{ return ID }
+{float}	{ return FLOAT; }
 ";"	{ return SEMI; }
 ","	{ return COMMA; }
 "="	{ return ASSIGNOP; }
@@ -29,7 +44,8 @@ ID	{letter_}({letter_}|{digit})*
 "||"	{ return OR; }
 "."	{ return DOT; }
 "!"	{ return NOT; }
-"INT"|"FLOAT"	{ REJECT;return TYPE; }
+{type}	{ return TYPE; }
+{id}	{ return ID; }
 "("	{ return LP; }
 ")"	{ return RP; }
 "["	{ return LB; }

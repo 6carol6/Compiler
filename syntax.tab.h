@@ -40,33 +40,33 @@
      INT = 258,
      FLOAT = 259,
      ID = 260,
-     PLUS = 261,
-     MINUS = 262,
-     STAR = 263,
-     DIV = 264,
-     OCT = 265,
-     HEX = 266,
-     SEMI = 267,
-     COMMA = 268,
-     DOT = 269,
-     ASSIGNOP = 270,
-     RELOP = 271,
-     AND = 272,
-     OR = 273,
-     NOT = 274,
-     TYPE = 275,
+     OCT = 261,
+     HEX = 262,
+     SEMI = 263,
+     COMMA = 264,
+     LC = 265,
+     RC = 266,
+     TYPE = 267,
+     STRUCT = 268,
+     RETURN = 269,
+     IF = 270,
+     WHILE = 271,
+     DOT = 272,
+     RB = 273,
+     LB = 274,
+     RP = 275,
      LP = 276,
-     RP = 277,
-     LB = 278,
-     RB = 279,
-     LC = 280,
-     RC = 281,
-     STRUCT = 282,
-     RETURN = 283,
-     IF = 284,
-     ELSE = 285,
-     WHILE = 286,
-     LOWER_THAN_ELSE = 287
+     NOT = 277,
+     DIV = 278,
+     STAR = 279,
+     MINUS = 280,
+     PLUS = 281,
+     RELOP = 282,
+     AND = 283,
+     OR = 284,
+     ASSIGNOP = 285,
+     LOWER_THAN_ELSE = 286,
+     ELSE = 287
    };
 #endif
 
@@ -77,16 +77,12 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 6 "syntax.y"
-
-	int type_int;
-	float type_float;
-	double type_double;
-
+#line 7 "syntax.y"
+struct Node* treeNode;
 
 
 /* Line 2068 of yacc.c  */
-#line 90 "syntax.tab.h"
+#line 86 "syntax.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -95,4 +91,18 @@ typedef union YYSTYPE
 
 extern YYSTYPE yylval;
 
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+typedef struct YYLTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+} YYLTYPE;
+# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
+# define YYLTYPE_IS_DECLARED 1
+# define YYLTYPE_IS_TRIVIAL 1
+#endif
+
+extern YYLTYPE yylloc;
 

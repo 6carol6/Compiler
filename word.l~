@@ -1,38 +1,62 @@
+%{
+	int yycolumn = 1;
+	
+	#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;\
+	yylloc.first_column = yycolumn;yylloc.last_column = yycolumn+yyleng-1;\
+	yycolumn += yyleng;
+	#include "syntax.tab.h"
+//	#include "Node.h"
+%}
+
+delim	[ \t]
+ws	{delim}+
 relop	>|>=|<|<=|==|!=
 letter	[A-Za-z]
 letter_	[A-Za-z_]
 digit	[0-9]
-INT	{digit}*
-FLOAT	{digit}*\.?{digit}+|{digit}+\.
-ID	{letter_}({letter_}|{digit})*
+oct     0[0-7]+
+hex	0[xX][0-9A-Fa-f]+
+type	int|float
+int     0|[1-9]?{digit}*|{hex}|{oct}
+float	({int}|"")\.?{digit}+
+id	{letter_}({letter_}|{digit})*
+
 %%
-{INT}	{ printf("INT");REJECT; }
-{FLOAT}	{ printf("FLOAT");REJECT; }
-{ID}	{ printf("ID"); }
-";"	{ printf("SEMI\n"); }
-","	{ printf("COMMA\n"); }
-"="	{ printf("ASSIGNOP\n"); }
-{relop}	{ printf("RELOP\n"); }
-"+"	{ printf("PLUS\n"); }
-"-"	{ printf("MINUS\n"); }
-"*"	{ printf("STAR\n"); }
-"/"	{ printf("DIV"); }
-"&&"	{ printf("AND\n"); }
-"||"	{ printf("OR\n"); }
-"."	{ printf("DOT\n"); }
-"!"	{ printf("NOT\n"); }
-{INT}|{FLOAT}	{ printf("TYPE\n");REJECT; }
-"("	{ printf("LP\n"); }
-")"	{ printf("RP\n"); }
-"["	{ printf("LB\n"); }
-"]"	{ printf("RB\n"); }
-"{"	{ printf("LC\n"); }
-"}"	{ printf("RC\n"); }
-"struct"	{ printf("STRUCT"); }
-"return"	{ printf("RETURN"); }
-"if"	{ printf("IF"); }
-"else"	{ printf("ELSE"); }
-"while"	{ printf("WHILE"); }
+{ws}	{}
+\n	{ yycolumn = 1; }
+{oct}	{ REJECT;return OCT; }
+{hex}	{ REJECT;return HEX; }
+{int}	{ 	
+		//yylval = atoi(yytext);
+//		REJECT;
+		return INT;
+	}
+{float}	{ return FLOAT; }
+{id}	{ return ID; }
+";"	{ return SEMI; }
+","	{ return COMMA; }
+"="	{ return ASSIGNOP; }
+{relop}	{ return RELOP; }
+"+"	{ return PLUS; }
+"-"	{ return MINUS; }
+"*"	{ return STAR; }
+"/"	{ return DIV; }
+"&&"	{ return AND; }
+"||"	{ return OR; }
+"."	{ return DOT; }
+"!"	{ return NOT; }
+{type}	{ return TYPE; }
+"("	{ return LP; }
+")"	{ return RP; }
+"["	{ return LB; }
+"]"	{ return RB; }
+"{"	{ return LC; }
+"}"	{ return RC; }
+"struct"	{ return STRUCT; }
+"return"	{ return RETURN; }
+"if"	{ return IF; }
+"else"	{ return ELSE; }
+"while"	{ return WHILE; }
 .	{
 		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
 	}
