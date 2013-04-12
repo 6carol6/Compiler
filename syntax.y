@@ -2,7 +2,9 @@
 	#include <stdio.h>
 	#include <stdarg.h>
 	#include "lex.yy.c"
+	struct Node* root;
 	extern void connect_tree(struct Node** root, int n, ...);
+	extern void display_tree(struct Node* root, int blank);
 %}
 
 /*declared types*/
@@ -39,12 +41,13 @@
 %%
 /*High-Lever Definitions*/
 Program		:	ExtDefList {
-				create_tree_node(&$$, "Program");
+				create_tree_node(&$$, "Program", 1);
 				connect_tree(&$$, 1, $1);
+				root = $$;
 			}
 		;
 ExtDefList	:	ExtDef ExtDefList {
-				create_tree_node(&$$, "ExtDefList");
+				create_tree_node(&$$, "ExtDefList", 1);
 				connect_tree(&$$, 2, $1, $2);
 			}
 		|	/*empty*/	{$$ = NULL;}
@@ -298,6 +301,7 @@ int main(int argc, char** argv){
 	yyrestart(f);
 	//yydebug = 1;
 	yyparse();
+	display_tree(root, 0);
 	return 0;
 }
 
@@ -323,4 +327,17 @@ void connect_tree(struct Node** root, int n, ...){
 		p->brother = child;
 	}
 	va_end(child_list);
+}
+
+void display_tree(struct Node* root, int blank){
+	int i; 
+	for(i = 0; i < blank; i++){
+		printf("  ");
+	}
+	printf("%s\n", root->name);
+	struct Node* p = root->children;
+	while(p != NULL){
+		display_tree(p, blank+1);
+		p = p->brother;
+	}
 }

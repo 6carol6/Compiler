@@ -10,7 +10,7 @@ yylineno = 1
 	#include "syntax.tab.h"
 	#include "Node.h"
 	#include "stdio.h"
-	extern void create_tree_node(struct Node** node, char* name);
+	extern void create_tree_node(struct Node** node, char* name, int is_show);
 %}
 
 delim	[ \t]
@@ -29,8 +29,8 @@ id	{letter_}({letter_}|{digit})*
 %%
 {ws}	{}
 \n	{ yycolumn = 1;}
-{oct}	{ create_tree_node(&yylval.treeNode, "OCT");REJECT;return OCT; }
-{hex}	{ create_tree_node(&yylval.treeNode, "HEX");REJECT;return HEX; }
+{oct}	{ create_tree_node(&yylval.treeNode, "OCT", 0);REJECT;return OCT; }
+{hex}	{ create_tree_node(&yylval.treeNode, "HEX", 0);REJECT;return HEX; }
 {int}	{ create_tree_node(&yylval.treeNode, "INT");return INT; }
 {float}	{ create_tree_node(&yylval.treeNode, "FLOAT");return FLOAT; }
 ";"	{ create_tree_node(&yylval.treeNode, "SEMI");return SEMI; }
@@ -62,10 +62,11 @@ id	{letter_}({letter_}|{digit})*
 		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
 	}
 %%
-void create_tree_node(struct Node** node, char* name){
+void create_tree_node(struct Node** node, char* name, int is_show){
 	*node = (struct Node*)malloc(sizeof(struct Node));
 	(*node)->name = name;
 	(*node)->line_num = yylineno;
+	(*node)->show_line_num = is_show;
 	(*node)->brother = NULL;
 	(*node)->children = NULL;
 }
