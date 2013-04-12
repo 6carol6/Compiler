@@ -561,8 +561,8 @@ char *yytext;
 	yycolumn += yyleng;
 	#include "syntax.tab.h"
 	#include "Node.h"
-	#include "stdio.h"
-	extern void create_tree_node(struct Node** node, char* name);
+	#include <stdio.h>
+	extern void create_tree_node(struct Node** node, char* name, char* subname, int is_show);
 #line 567 "lex.yy.c"
 
 #define INITIAL 0
@@ -868,153 +868,153 @@ YY_RULE_SETUP
 case 3:
 YY_RULE_SETUP
 #line 32 "word.l"
-{ create_tree_node(&yylval.treeNode, "OCT");REJECT;return OCT; }
+{ create_tree_node(&yylval.treeNode, "OCT", "", 0);REJECT;return OCT; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
 #line 33 "word.l"
-{ create_tree_node(&yylval.treeNode, "HEX");REJECT;return HEX; }
+{ create_tree_node(&yylval.treeNode, "HEX", "", 0);REJECT;return HEX; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
 #line 34 "word.l"
-{ create_tree_node(&yylval.treeNode, "INT");return INT; }
+{ create_tree_node(&yylval.treeNode, "INT", yytext, 0);return INT; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
 #line 35 "word.l"
-{ create_tree_node(&yylval.treeNode, "FLOAT");return FLOAT; }
+{ create_tree_node(&yylval.treeNode, "FLOAT", "", 0);return FLOAT; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
 #line 36 "word.l"
-{ create_tree_node(&yylval.treeNode, "SEMI");return SEMI; }
+{ create_tree_node(&yylval.treeNode, "SEMI", "", 0);return SEMI; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
 #line 37 "word.l"
-{ create_tree_node(&yylval.treeNode, "COMMA");return COMMA; }
+{ create_tree_node(&yylval.treeNode, "COMMA", "", 0);return COMMA; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
 #line 38 "word.l"
-{ create_tree_node(&yylval.treeNode, "ASSIGNOP");return ASSIGNOP; }
+{ create_tree_node(&yylval.treeNode, "ASSIGNOP", "", 0);return ASSIGNOP; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 39 "word.l"
-{ create_tree_node(&yylval.treeNode, "RELOP");return RELOP; }
+{ create_tree_node(&yylval.treeNode, "RELOP", "", 0);return RELOP; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 40 "word.l"
-{ create_tree_node(&yylval.treeNode, "PLUS");return PLUS; }
+{ create_tree_node(&yylval.treeNode, "PLUS", "", 0);return PLUS; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 41 "word.l"
-{ create_tree_node(&yylval.treeNode, "MINUS");return MINUS; }
+{ create_tree_node(&yylval.treeNode, "MINUS", "", 0);return MINUS; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 42 "word.l"
-{ create_tree_node(&yylval.treeNode, "STAR");return STAR; }
+{ create_tree_node(&yylval.treeNode, "STAR", "", 0);return STAR; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
 #line 43 "word.l"
-{ create_tree_node(&yylval.treeNode, "DIV");return DIV; }
+{ create_tree_node(&yylval.treeNode, "DIV", "", 0);return DIV; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 44 "word.l"
-{ create_tree_node(&yylval.treeNode, "AND");return AND; }
+{ create_tree_node(&yylval.treeNode, "AND", "", 0);return AND; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
 #line 45 "word.l"
-{ create_tree_node(&yylval.treeNode, "OR");return OR; }
+{ create_tree_node(&yylval.treeNode, "OR", "", 0);return OR; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
 #line 46 "word.l"
-{ create_tree_node(&yylval.treeNode, "NOT");return DOT; }
+{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return DOT; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 47 "word.l"
-{ create_tree_node(&yylval.treeNode, "NOT");return NOT; }
+{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return NOT; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 48 "word.l"
-{ create_tree_node(&yylval.treeNode, "TYPE");return TYPE; }
+{ create_tree_node(&yylval.treeNode, "TYPE", yytext, 0);return TYPE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 49 "word.l"
-{ create_tree_node(&yylval.treeNode, "ID");return ID; }
+{ create_tree_node(&yylval.treeNode, "ID", yytext, 0);return ID; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
 #line 50 "word.l"
-{ create_tree_node(&yylval.treeNode, "LP");return LP; }
+{ create_tree_node(&yylval.treeNode, "LP", "", 0);return LP; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 51 "word.l"
-{ create_tree_node(&yylval.treeNode, "RP");return RP; }
+{ create_tree_node(&yylval.treeNode, "RP", "", 0);return RP; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 52 "word.l"
-{ create_tree_node(&yylval.treeNode, "LB");return LB; }
+{ create_tree_node(&yylval.treeNode, "LB", "", 0);return LB; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 53 "word.l"
-{ create_tree_node(&yylval.treeNode, "RB");return RB; }
+{ create_tree_node(&yylval.treeNode, "RB", "", 0);return RB; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
 #line 54 "word.l"
-{ create_tree_node(&yylval.treeNode, "LC");return LC; }
+{ create_tree_node(&yylval.treeNode, "LC", "", 0);return LC; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 55 "word.l"
-{ create_tree_node(&yylval.treeNode, "RC");return RC; }
+{ create_tree_node(&yylval.treeNode, "RC", "", 0);return RC; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
 #line 56 "word.l"
-{ create_tree_node(&yylval.treeNode, "STRUCT");return STRUCT; }
+{ create_tree_node(&yylval.treeNode, "STRUCT", "", 0);return STRUCT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 57 "word.l"
-{ create_tree_node(&yylval.treeNode, "RETURN");return RETURN; }
+{ create_tree_node(&yylval.treeNode, "RETURN", "", 0);return RETURN; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 58 "word.l"
-{ create_tree_node(&yylval.treeNode, "IF");return IF; }
+{ create_tree_node(&yylval.treeNode, "IF", "", 0);return IF; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
 #line 59 "word.l"
-{ create_tree_node(&yylval.treeNode, "ELSE");return ELSE; }
+{ create_tree_node(&yylval.treeNode, "ELSE", "", 0);return ELSE; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
 #line 60 "word.l"
-{ create_tree_node(&yylval.treeNode, "WHILE");return WHILE; }
+{ create_tree_node(&yylval.treeNode, "WHILE", "", 0);return WHILE; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
 #line 61 "word.l"
 {
-		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
+		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, "");
 	}
 	YY_BREAK
 case 33:
@@ -2009,10 +2009,12 @@ void yyfree (void * ptr )
 #line 64 "word.l"
 
 
-void create_tree_node(struct Node** node, char* name){
+void create_tree_node(struct Node** node, char* name, char* subname, int is_show){
 	*node = (struct Node*)malloc(sizeof(struct Node));
 	(*node)->name = name;
+	(*node)->subname = subname;
 	(*node)->line_num = yylineno;
+	(*node)->show_line_num = is_show;
 	(*node)->brother = NULL;
 	(*node)->children = NULL;
 }

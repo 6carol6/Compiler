@@ -9,8 +9,8 @@ yylineno = 1
 	yycolumn += yyleng;
 	#include "syntax.tab.h"
 	#include "Node.h"
-	#include "stdio.h"
-	extern void create_tree_node(struct Node** node, char* name, int is_show);
+	#include <stdio.h>
+	extern void create_tree_node(struct Node** node, char* name, char* subname, int is_show);
 %}
 
 delim	[ \t]
@@ -29,42 +29,43 @@ id	{letter_}({letter_}|{digit})*
 %%
 {ws}	{}
 \n	{ yycolumn = 1;}
-{oct}	{ create_tree_node(&yylval.treeNode, "OCT", 0);REJECT;return OCT; }
-{hex}	{ create_tree_node(&yylval.treeNode, "HEX", 0);REJECT;return HEX; }
-{int}	{ create_tree_node(&yylval.treeNode, "INT");return INT; }
-{float}	{ create_tree_node(&yylval.treeNode, "FLOAT");return FLOAT; }
-";"	{ create_tree_node(&yylval.treeNode, "SEMI");return SEMI; }
-","	{ create_tree_node(&yylval.treeNode, "COMMA");return COMMA; }
-"="	{ create_tree_node(&yylval.treeNode, "ASSIGNOP");return ASSIGNOP; }
-{relop}	{ create_tree_node(&yylval.treeNode, "RELOP");return RELOP; }
-"+"	{ create_tree_node(&yylval.treeNode, "PLUS");return PLUS; }
-"-"	{ create_tree_node(&yylval.treeNode, "MINUS");return MINUS; }
-"*"	{ create_tree_node(&yylval.treeNode, "STAR");return STAR; }
-"/"	{ create_tree_node(&yylval.treeNode, "DIV");return DIV; }
-"&&"	{ create_tree_node(&yylval.treeNode, "AND");return AND; }
-"||"	{ create_tree_node(&yylval.treeNode, "OR");return OR; }
-"."	{ create_tree_node(&yylval.treeNode, "NOT");return DOT; }
-"!"	{ create_tree_node(&yylval.treeNode, "NOT");return NOT; }
-{type}	{ create_tree_node(&yylval.treeNode, "TYPE");return TYPE; }
-{id}	{ create_tree_node(&yylval.treeNode, "ID");return ID; }
-"("	{ create_tree_node(&yylval.treeNode, "LP");return LP; }
-")"	{ create_tree_node(&yylval.treeNode, "RP");return RP; }
-"["	{ create_tree_node(&yylval.treeNode, "LB");return LB; }
-"]"	{ create_tree_node(&yylval.treeNode, "RB");return RB; }
-"{"	{ create_tree_node(&yylval.treeNode, "LC");return LC; }
-"}"	{ create_tree_node(&yylval.treeNode, "RC");return RC; }
-"struct"	{ create_tree_node(&yylval.treeNode, "STRUCT");return STRUCT; }
-"return"	{ create_tree_node(&yylval.treeNode, "RETURN");return RETURN; }
-"if"	{ create_tree_node(&yylval.treeNode, "IF");return IF; }
-"else"	{ create_tree_node(&yylval.treeNode, "ELSE");return ELSE; }
-"while"	{ create_tree_node(&yylval.treeNode, "WHILE");return WHILE; }
+{oct}	{ create_tree_node(&yylval.treeNode, "OCT", "", 0);REJECT;return OCT; }
+{hex}	{ create_tree_node(&yylval.treeNode, "HEX", "", 0);REJECT;return HEX; }
+{int}	{ create_tree_node(&yylval.treeNode, "INT", yytext, 0);return INT; }
+{float}	{ create_tree_node(&yylval.treeNode, "FLOAT", "", 0);return FLOAT; }
+";"	{ create_tree_node(&yylval.treeNode, "SEMI", "", 0);return SEMI; }
+","	{ create_tree_node(&yylval.treeNode, "COMMA", "", 0);return COMMA; }
+"="	{ create_tree_node(&yylval.treeNode, "ASSIGNOP", "", 0);return ASSIGNOP; }
+{relop}	{ create_tree_node(&yylval.treeNode, "RELOP", "", 0);return RELOP; }
+"+"	{ create_tree_node(&yylval.treeNode, "PLUS", "", 0);return PLUS; }
+"-"	{ create_tree_node(&yylval.treeNode, "MINUS", "", 0);return MINUS; }
+"*"	{ create_tree_node(&yylval.treeNode, "STAR", "", 0);return STAR; }
+"/"	{ create_tree_node(&yylval.treeNode, "DIV", "", 0);return DIV; }
+"&&"	{ create_tree_node(&yylval.treeNode, "AND", "", 0);return AND; }
+"||"	{ create_tree_node(&yylval.treeNode, "OR", "", 0);return OR; }
+"."	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return DOT; }
+"!"	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return NOT; }
+{type}	{ create_tree_node(&yylval.treeNode, "TYPE", yytext, 0);return TYPE; }
+{id}	{ create_tree_node(&yylval.treeNode, "ID", yytext, 0);return ID; }
+"("	{ create_tree_node(&yylval.treeNode, "LP", "", 0);return LP; }
+")"	{ create_tree_node(&yylval.treeNode, "RP", "", 0);return RP; }
+"["	{ create_tree_node(&yylval.treeNode, "LB", "", 0);return LB; }
+"]"	{ create_tree_node(&yylval.treeNode, "RB", "", 0);return RB; }
+"{"	{ create_tree_node(&yylval.treeNode, "LC", "", 0);return LC; }
+"}"	{ create_tree_node(&yylval.treeNode, "RC", "", 0);return RC; }
+"struct"	{ create_tree_node(&yylval.treeNode, "STRUCT", "", 0);return STRUCT; }
+"return"	{ create_tree_node(&yylval.treeNode, "RETURN", "", 0);return RETURN; }
+"if"	{ create_tree_node(&yylval.treeNode, "IF", "", 0);return IF; }
+"else"	{ create_tree_node(&yylval.treeNode, "ELSE", "", 0);return ELSE; }
+"while"	{ create_tree_node(&yylval.treeNode, "WHILE", "", 0);return WHILE; }
 .	{
-		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
+		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, "");
 	}
 %%
-void create_tree_node(struct Node** node, char* name, int is_show){
+void create_tree_node(struct Node** node, char* name, char* subname, int is_show){
 	*node = (struct Node*)malloc(sizeof(struct Node));
 	(*node)->name = name;
+	(*node)->subname = subname;
 	(*node)->line_num = yylineno;
 	(*node)->show_line_num = is_show;
 	(*node)->brother = NULL;
