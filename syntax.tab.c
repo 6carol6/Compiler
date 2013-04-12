@@ -486,12 +486,12 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    41,    41,    47,    52,    54,    58,    62,    67,    71,
-      77,    81,    86,    90,    95,    99,   101,   107,   111,   116,
-     120,   125,   129,   134,   140,   145,   149,   151,   155,   159,
-     163,   167,   171,   177,   181,   183,   188,   192,   197,   201,
-     207,   211,   215,   219,   223,   227,   231,   235,   239,   243,
-     247,   251,   255,   259,   263,   267,   272,   276,   281,   285
+       0,    41,    41,    46,    50,    52,    56,    60,    65,    69,
+      75,    79,    84,    88,    93,    97,    99,   105,   109,   114,
+     118,   123,   127,   132,   138,   143,   147,   149,   153,   157,
+     161,   165,   169,   175,   179,   181,   186,   190,   195,   199,
+     205,   209,   213,   217,   221,   225,   229,   233,   237,   241,
+     245,   249,   253,   257,   261,   265,   269,   273,   278,   282
 };
 #endif
 
@@ -1561,32 +1561,30 @@ yyreduce:
     {
 				create_tree_node(&(yyval.treeNode), "Program");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
-				printf("program_line:%d\n",(yyval.treeNode)->line_num);
 			}
     break;
 
   case 3:
 
 /* Line 1806 of yacc.c  */
-#line 47 "syntax.y"
+#line 46 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "ExtDefList");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
-				printf("ext_def_list_line:%d\n", (yyval.treeNode)->line_num);
 			}
     break;
 
   case 4:
 
 /* Line 1806 of yacc.c  */
-#line 52 "syntax.y"
+#line 50 "syntax.y"
     {(yyval.treeNode) = NULL;}
     break;
 
   case 5:
 
 /* Line 1806 of yacc.c  */
-#line 54 "syntax.y"
+#line 52 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "ExtDef");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1596,7 +1594,7 @@ yyreduce:
   case 6:
 
 /* Line 1806 of yacc.c  */
-#line 58 "syntax.y"
+#line 56 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "ExtDef");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -1606,7 +1604,7 @@ yyreduce:
   case 7:
 
 /* Line 1806 of yacc.c  */
-#line 62 "syntax.y"
+#line 60 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "ExtDef");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1616,7 +1614,7 @@ yyreduce:
   case 8:
 
 /* Line 1806 of yacc.c  */
-#line 67 "syntax.y"
+#line 65 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "ExtDecList");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1626,7 +1624,7 @@ yyreduce:
   case 9:
 
 /* Line 1806 of yacc.c  */
-#line 71 "syntax.y"
+#line 69 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "ExtDecList");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1636,7 +1634,7 @@ yyreduce:
   case 10:
 
 /* Line 1806 of yacc.c  */
-#line 77 "syntax.y"
+#line 75 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Specifier");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1646,7 +1644,7 @@ yyreduce:
   case 11:
 
 /* Line 1806 of yacc.c  */
-#line 81 "syntax.y"
+#line 79 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Specifier");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1656,7 +1654,7 @@ yyreduce:
   case 12:
 
 /* Line 1806 of yacc.c  */
-#line 86 "syntax.y"
+#line 84 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "StructSpecifier");
 				connect_tree(&(yyval.treeNode), 5, (yyvsp[(1) - (5)].treeNode), (yyvsp[(2) - (5)].treeNode), (yyvsp[(3) - (5)].treeNode), (yyvsp[(4) - (5)].treeNode),(yyvsp[(5) - (5)].treeNode));
@@ -1666,7 +1664,7 @@ yyreduce:
   case 13:
 
 /* Line 1806 of yacc.c  */
-#line 90 "syntax.y"
+#line 88 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "StructSpecifier");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -1676,7 +1674,7 @@ yyreduce:
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 95 "syntax.y"
+#line 93 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "OptTag");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1686,14 +1684,14 @@ yyreduce:
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 99 "syntax.y"
+#line 97 "syntax.y"
     {(yyval.treeNode) = NULL;}
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 101 "syntax.y"
+#line 99 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Tag");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1703,7 +1701,7 @@ yyreduce:
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 107 "syntax.y"
+#line 105 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "VarDec");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1713,7 +1711,7 @@ yyreduce:
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 111 "syntax.y"
+#line 109 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "VarDec");
 				connect_tree(&(yyval.treeNode), 4, (yyvsp[(1) - (4)].treeNode), (yyvsp[(2) - (4)].treeNode), (yyvsp[(3) - (4)].treeNode), (yyvsp[(4) - (4)].treeNode));
@@ -1723,7 +1721,7 @@ yyreduce:
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 116 "syntax.y"
+#line 114 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "FunDec");
 				connect_tree(&(yyval.treeNode), 4, (yyvsp[(1) - (4)].treeNode), (yyvsp[(2) - (4)].treeNode), (yyvsp[(3) - (4)].treeNode), (yyvsp[(4) - (4)].treeNode));
@@ -1733,7 +1731,7 @@ yyreduce:
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 120 "syntax.y"
+#line 118 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "FunDec");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1743,7 +1741,7 @@ yyreduce:
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 125 "syntax.y"
+#line 123 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "VarList");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1753,7 +1751,7 @@ yyreduce:
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 129 "syntax.y"
+#line 127 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "VarList");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1763,7 +1761,7 @@ yyreduce:
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 134 "syntax.y"
+#line 132 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "ParamDec");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -1773,7 +1771,7 @@ yyreduce:
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 140 "syntax.y"
+#line 138 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "CompSt");
 				connect_tree(&(yyval.treeNode), 4, (yyvsp[(1) - (4)].treeNode), (yyvsp[(2) - (4)].treeNode), (yyvsp[(3) - (4)].treeNode), (yyvsp[(4) - (4)].treeNode));
@@ -1783,7 +1781,7 @@ yyreduce:
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 145 "syntax.y"
+#line 143 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "StmtList");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -1793,14 +1791,14 @@ yyreduce:
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 149 "syntax.y"
+#line 147 "syntax.y"
     {(yyval.treeNode) = NULL;}
     break;
 
   case 27:
 
 /* Line 1806 of yacc.c  */
-#line 151 "syntax.y"
+#line 149 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Stmt");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -1810,7 +1808,7 @@ yyreduce:
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 155 "syntax.y"
+#line 153 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Stmt");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1820,7 +1818,7 @@ yyreduce:
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 159 "syntax.y"
+#line 157 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Stmt");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1830,7 +1828,7 @@ yyreduce:
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 163 "syntax.y"
+#line 161 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Stmt");
 				connect_tree(&(yyval.treeNode), 5, (yyvsp[(1) - (5)].treeNode), (yyvsp[(2) - (5)].treeNode), (yyvsp[(3) - (5)].treeNode), (yyvsp[(4) - (5)].treeNode), (yyvsp[(5) - (5)].treeNode));
@@ -1840,7 +1838,7 @@ yyreduce:
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 167 "syntax.y"
+#line 165 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Stmt");
 				connect_tree(&(yyval.treeNode), 7, (yyvsp[(1) - (7)].treeNode), (yyvsp[(2) - (7)].treeNode), (yyvsp[(3) - (7)].treeNode), (yyvsp[(4) - (7)].treeNode), (yyvsp[(5) - (7)].treeNode), (yyvsp[(6) - (7)].treeNode), (yyvsp[(7) - (7)].treeNode));
@@ -1850,7 +1848,7 @@ yyreduce:
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 171 "syntax.y"
+#line 169 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Stmt");
 				connect_tree(&(yyval.treeNode), 5, (yyvsp[(1) - (5)].treeNode), (yyvsp[(2) - (5)].treeNode), (yyvsp[(3) - (5)].treeNode), (yyvsp[(4) - (5)].treeNode), (yyvsp[(5) - (5)].treeNode));
@@ -1860,7 +1858,7 @@ yyreduce:
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 177 "syntax.y"
+#line 175 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "DefList");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -1870,14 +1868,14 @@ yyreduce:
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 181 "syntax.y"
+#line 179 "syntax.y"
     {(yyval.treeNode) = NULL;}
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 183 "syntax.y"
+#line 181 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Def");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1887,7 +1885,7 @@ yyreduce:
   case 36:
 
 /* Line 1806 of yacc.c  */
-#line 188 "syntax.y"
+#line 186 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "DecList");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1897,7 +1895,7 @@ yyreduce:
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 192 "syntax.y"
+#line 190 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "DecList");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1907,7 +1905,7 @@ yyreduce:
   case 38:
 
 /* Line 1806 of yacc.c  */
-#line 197 "syntax.y"
+#line 195 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Dec");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -1917,7 +1915,7 @@ yyreduce:
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 201 "syntax.y"
+#line 199 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Dec");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1927,7 +1925,7 @@ yyreduce:
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 207 "syntax.y"
+#line 205 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1937,7 +1935,7 @@ yyreduce:
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 211 "syntax.y"
+#line 209 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1947,7 +1945,7 @@ yyreduce:
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 215 "syntax.y"
+#line 213 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1957,7 +1955,7 @@ yyreduce:
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 219 "syntax.y"
+#line 217 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1967,7 +1965,7 @@ yyreduce:
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 223 "syntax.y"
+#line 221 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1977,7 +1975,7 @@ yyreduce:
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 227 "syntax.y"
+#line 225 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1987,7 +1985,7 @@ yyreduce:
   case 46:
 
 /* Line 1806 of yacc.c  */
-#line 231 "syntax.y"
+#line 229 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -1997,7 +1995,7 @@ yyreduce:
   case 47:
 
 /* Line 1806 of yacc.c  */
-#line 235 "syntax.y"
+#line 233 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -2007,7 +2005,7 @@ yyreduce:
   case 48:
 
 /* Line 1806 of yacc.c  */
-#line 239 "syntax.y"
+#line 237 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -2017,7 +2015,7 @@ yyreduce:
   case 49:
 
 /* Line 1806 of yacc.c  */
-#line 243 "syntax.y"
+#line 241 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -2027,7 +2025,7 @@ yyreduce:
   case 50:
 
 /* Line 1806 of yacc.c  */
-#line 247 "syntax.y"
+#line 245 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 2, (yyvsp[(1) - (2)].treeNode), (yyvsp[(2) - (2)].treeNode));
@@ -2037,7 +2035,7 @@ yyreduce:
   case 51:
 
 /* Line 1806 of yacc.c  */
-#line 251 "syntax.y"
+#line 249 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 4, (yyvsp[(1) - (4)].treeNode), (yyvsp[(2) - (4)].treeNode), (yyvsp[(3) - (4)].treeNode), (yyvsp[(4) - (4)].treeNode));
@@ -2047,7 +2045,7 @@ yyreduce:
   case 52:
 
 /* Line 1806 of yacc.c  */
-#line 255 "syntax.y"
+#line 253 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -2057,7 +2055,7 @@ yyreduce:
   case 53:
 
 /* Line 1806 of yacc.c  */
-#line 259 "syntax.y"
+#line 257 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 4, (yyvsp[(1) - (4)].treeNode), (yyvsp[(2) - (4)].treeNode), (yyvsp[(3) - (4)].treeNode), (yyvsp[(4) - (4)].treeNode));
@@ -2067,7 +2065,7 @@ yyreduce:
   case 54:
 
 /* Line 1806 of yacc.c  */
-#line 263 "syntax.y"
+#line 261 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Exp");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -2077,10 +2075,9 @@ yyreduce:
   case 55:
 
 /* Line 1806 of yacc.c  */
-#line 267 "syntax.y"
+#line 265 "syntax.y"
     {
 					create_tree_node(&(yyval.treeNode), "Exp");
-					printf("id:%d\n", (yyval.treeNode)->line_num);
 					connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
 				}
     break;
@@ -2088,7 +2085,7 @@ yyreduce:
   case 56:
 
 /* Line 1806 of yacc.c  */
-#line 272 "syntax.y"
+#line 269 "syntax.y"
     {
 					create_tree_node(&(yyval.treeNode), "Exp");
 					connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -2098,7 +2095,7 @@ yyreduce:
   case 57:
 
 /* Line 1806 of yacc.c  */
-#line 276 "syntax.y"
+#line 273 "syntax.y"
     {
 					create_tree_node(&(yyval.treeNode), "Exp");
 					connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -2108,7 +2105,7 @@ yyreduce:
   case 58:
 
 /* Line 1806 of yacc.c  */
-#line 281 "syntax.y"
+#line 278 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Args");
 				connect_tree(&(yyval.treeNode), 3, (yyvsp[(1) - (3)].treeNode), (yyvsp[(2) - (3)].treeNode), (yyvsp[(3) - (3)].treeNode));
@@ -2118,7 +2115,7 @@ yyreduce:
   case 59:
 
 /* Line 1806 of yacc.c  */
-#line 285 "syntax.y"
+#line 282 "syntax.y"
     {
 				create_tree_node(&(yyval.treeNode), "Args");
 				connect_tree(&(yyval.treeNode), 1, (yyvsp[(1) - (1)].treeNode));
@@ -2128,7 +2125,7 @@ yyreduce:
 
 
 /* Line 1806 of yacc.c  */
-#line 2132 "syntax.tab.c"
+#line 2129 "syntax.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2366,7 +2363,7 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 290 "syntax.y"
+#line 287 "syntax.y"
 
 yyerror(char* msg){
 	fprintf(stderr, "error: %s\n", msg);

@@ -66,7 +66,6 @@ void create_tree_node(struct Node** node, char* name){
 	*node = (struct Node*)malloc(sizeof(struct Node));
 	(*node)->name = name;
 	(*node)->line_num = yylineno;
-	printf("line_num:%d\n",yylineno);
 	(*node)->brother = NULL;
 	(*node)->children = NULL;
 }
