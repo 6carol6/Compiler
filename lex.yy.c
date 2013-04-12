@@ -169,7 +169,20 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
 
-    #define YY_LESS_LINENO(n)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex. 
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -515,6 +528,12 @@ static yyconst flex_int16_t yy_chk[152] =
        70
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static yyconst flex_int32_t yy_rule_can_match_eol[34] =
+    {   0,
+0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+
 extern int yy_flex_debug;
 int yy_flex_debug = 0;
 
@@ -534,7 +553,7 @@ goto find_rule; \
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
 #line 1 "word.l"
-#line 2 "word.l"
+#line 5 "word.l"
 	int yycolumn = 1;
 	
 	#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;\
@@ -542,7 +561,9 @@ char *yytext;
 	yycolumn += yyleng;
 	#include "syntax.tab.h"
 	#include "Node.h"
-#line 546 "lex.yy.c"
+	#include "stdio.h"
+	extern void create_tree_node(struct Node** node, char* name);
+#line 567 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -729,9 +750,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 24 "word.l"
+#line 29 "word.l"
 
-#line 735 "lex.yy.c"
+#line 756 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -819,183 +840,189 @@ find_rule: /* we branch to this label when backing up */
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			int yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					   
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
 	{ /* beginning of action switch */
 case 1:
 YY_RULE_SETUP
-#line 25 "word.l"
+#line 30 "word.l"
 {}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 26 "word.l"
-{ yycolumn = 1; }
+#line 31 "word.l"
+{ yycolumn = 1;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 27 "word.l"
-{ REJECT;return OCT; }
+#line 32 "word.l"
+{ create_tree_node(&yylval.treeNode, "OCT");REJECT;return OCT; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 28 "word.l"
-{ REJECT;return HEX; }
+#line 33 "word.l"
+{ create_tree_node(&yylval.treeNode, "HEX");REJECT;return HEX; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 29 "word.l"
-{ 	
-		//yylval = atoi(yytext);
-//		REJECT;
-		return INT;
-	}
+#line 34 "word.l"
+{ create_tree_node(&yylval.treeNode, "INT");return INT; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 34 "word.l"
-{ return FLOAT; }
+#line 35 "word.l"
+{ create_tree_node(&yylval.treeNode, "FLOAT");return FLOAT; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 35 "word.l"
-{ return SEMI; }
+#line 36 "word.l"
+{ create_tree_node(&yylval.treeNode, "SEMI");return SEMI; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 36 "word.l"
-{ return COMMA; }
+#line 37 "word.l"
+{ create_tree_node(&yylval.treeNode, "COMMA");return COMMA; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 37 "word.l"
-{ return ASSIGNOP; }
+#line 38 "word.l"
+{ create_tree_node(&yylval.treeNode, "ASSIGNOP");return ASSIGNOP; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 38 "word.l"
-{ return RELOP; }
+#line 39 "word.l"
+{ create_tree_node(&yylval.treeNode, "RELOP");return RELOP; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 39 "word.l"
-{ return PLUS; }
+#line 40 "word.l"
+{ create_tree_node(&yylval.treeNode, "PLUS");return PLUS; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 40 "word.l"
-{ return MINUS; }
+#line 41 "word.l"
+{ create_tree_node(&yylval.treeNode, "MINUS");return MINUS; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 41 "word.l"
-{ return STAR; }
+#line 42 "word.l"
+{ create_tree_node(&yylval.treeNode, "STAR");return STAR; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 42 "word.l"
-{ return DIV; }
+#line 43 "word.l"
+{ create_tree_node(&yylval.treeNode, "DIV");return DIV; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 43 "word.l"
-{ return AND; }
+#line 44 "word.l"
+{ create_tree_node(&yylval.treeNode, "AND");return AND; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 44 "word.l"
-{ return OR; }
+#line 45 "word.l"
+{ create_tree_node(&yylval.treeNode, "OR");return OR; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 45 "word.l"
-{ return DOT; }
+#line 46 "word.l"
+{ create_tree_node(&yylval.treeNode, "NOT");return DOT; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 46 "word.l"
-{ return NOT; }
+#line 47 "word.l"
+{ create_tree_node(&yylval.treeNode, "NOT");return NOT; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 47 "word.l"
-{ return TYPE; }
+#line 48 "word.l"
+{ create_tree_node(&yylval.treeNode, "TYPE");return TYPE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 48 "word.l"
-{ return ID; }
+#line 49 "word.l"
+{ create_tree_node(&yylval.treeNode, "ID");return ID; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 49 "word.l"
-{ return LP; }
+#line 50 "word.l"
+{ create_tree_node(&yylval.treeNode, "LP");return LP; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 50 "word.l"
-{ return RP; }
+#line 51 "word.l"
+{ create_tree_node(&yylval.treeNode, "RP");return RP; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 51 "word.l"
-{ return LB; }
+#line 52 "word.l"
+{ create_tree_node(&yylval.treeNode, "LB");return LB; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 52 "word.l"
-{ return RB; }
+#line 53 "word.l"
+{ create_tree_node(&yylval.treeNode, "RB");return RB; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 53 "word.l"
-{ return LC; }
+#line 54 "word.l"
+{ create_tree_node(&yylval.treeNode, "LC");return LC; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 54 "word.l"
-{ return RC; }
+#line 55 "word.l"
+{ create_tree_node(&yylval.treeNode, "RC");return RC; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 55 "word.l"
-{ return STRUCT; }
+#line 56 "word.l"
+{ create_tree_node(&yylval.treeNode, "STRUCT");return STRUCT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 56 "word.l"
-{ return RETURN; }
+#line 57 "word.l"
+{ create_tree_node(&yylval.treeNode, "RETURN");return RETURN; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 57 "word.l"
-{ return IF; }
+#line 58 "word.l"
+{ create_tree_node(&yylval.treeNode, "IF");return IF; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 58 "word.l"
-{ return ELSE; }
+#line 59 "word.l"
+{ create_tree_node(&yylval.treeNode, "ELSE");return ELSE; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 59 "word.l"
-{ return WHILE; }
+#line 60 "word.l"
+{ create_tree_node(&yylval.treeNode, "WHILE");return WHILE; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 60 "word.l"
+#line 61 "word.l"
 {
 		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
 	}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 63 "word.l"
+#line 64 "word.l"
 ECHO;
 	YY_BREAK
-#line 999 "lex.yy.c"
+#line 1026 "lex.yy.c"
 			case YY_STATE_EOF(INITIAL):
 				yyterminate();
 
@@ -1322,6 +1349,10 @@ static int yy_get_next_buffer (void)
 
 	*--yy_cp = (char) c;
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -1396,6 +1427,11 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		   
+    yylineno++;
+;
 
 	return c;
 }
@@ -1867,6 +1903,9 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
+    
     (yy_buffer_stack) = 0;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -1967,7 +2006,15 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 63 "word.l"
+#line 64 "word.l"
 
 
+void create_tree_node(struct Node** node, char* name){
+	*node = (struct Node*)malloc(sizeof(struct Node));
+	(*node)->name = name;
+	(*node)->line_num = yylineno;
+	printf("line_num:%d\n",yylineno);
+	(*node)->brother = NULL;
+	(*node)->children = NULL;
+}
 

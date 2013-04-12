@@ -27,10 +27,11 @@
 %nonassoc <treeNode> LOWER_THAN_ELSE
 %nonassoc <treeNode> ELSE
 
+%type <treeNode> Program
 %locations
 %%
 /*High-Lever Definitions*/
-Program		:	ExtDefList
+Program		:	ExtDefList {create_tree_node(&$$, "Program");}
 		;
 ExtDefList	:	ExtDef ExtDefList
 		|	/*empty*/
@@ -117,4 +118,20 @@ Args		:	Exp COMMA Args
 %%
 yyerror(char* msg){
 	fprintf(stderr, "error: %s\n", msg);
+}
+int main(int argc, char** argv){
+	if(argc <= 1) return 1;
+	FILE* f = fopen(argv[1], "r");
+	if(!f){
+	  perror(argv[1]);
+	  return 1;
+	}
+	yyrestart(f);
+	//yydebug = 1;
+	yyparse();
+	return 0;
+}
+
+void connect_tree(){
+	
 }
