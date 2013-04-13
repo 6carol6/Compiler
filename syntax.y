@@ -294,6 +294,7 @@ Args		:	Exp COMMA Args	{
 yyerror(char* msg){
 	if(is_show_syntax_tree)
 		fprintf(stderr, "Error type B at line %d: %s\n", yylineno, msg);
+	is_show_syntax_tree = 0;
 }
 
 int main(int argc, char** argv){
