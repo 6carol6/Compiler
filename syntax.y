@@ -1,10 +1,13 @@
 %{
 	#include <stdio.h>
 	#include <stdarg.h>
+	#include <string.h>
+	#include <stdlib.h>
 	#include "lex.yy.c"
 	struct Node* root;
 	extern void connect_tree(struct Node** root, int n, ...);
 	extern void display_tree(struct Node* root, int blank);
+	extern char *i_format(char *num);
 %}
 
 /*declared types*/
@@ -96,19 +99,18 @@ StructSpecifier	:	STRUCT OptTag LC DefList RC	{
 OptTag		:	ID	{
 				create_tree_node(&$$, "OptTag", "", 1);
 				connect_tree(&$$, 1, $1);
-				printf("HEHEHEHE1%s",$1->subname);
 			}
 		|	/*empty*/	{$$ = NULL;}
 		;
 Tag		:	ID	{
 				create_tree_node(&$$, "Tag", "", 1);
-				connect_tree(&$$, 1, $1);printf("HEHEHEHE2%s",$1->subname);
+				connect_tree(&$$, 1, $1);
 			}
 		;
 /*Declarators*/
 VarDec		:	ID	{
 				create_tree_node(&$$, "VarDec", "", 1);
-				connect_tree(&$$, 1, $1);printf("HEHEHEHE3%s",$1->subname);
+				connect_tree(&$$, 1, $1);
 			}
 		|	VarDec LB INT RB	{
 				create_tree_node(&$$, "VarDec", "", 1);
@@ -121,7 +123,7 @@ FunDec		:	ID LP VarList RP	{
 			}
 		|	ID LP RP	{
 				create_tree_node(&$$, "FunDec", "", 1);
-				connect_tree(&$$, 3, $1, $2, $3);printf("HEHEHEHE4%s\n",$$->subname);
+				connect_tree(&$$, 3, $1, $2, $3);
 			}
 		;
 VarList		:	ParamDec COMMA VarList	{
@@ -290,7 +292,8 @@ Args		:	Exp COMMA Args	{
 		;
 %%
 yyerror(char* msg){
-	fprintf(stderr, "error: %s\n", msg);
+	if(is_show_syntax_tree)
+		fprintf(stderr, "Error type B at line %d: %s\n", yylineno, msg);
 }
 
 int main(int argc, char** argv){
@@ -301,14 +304,14 @@ int main(int argc, char** argv){
 	  return 1;
 	}
 	yyrestart(f);
-	//yydebug = 1;
+//	yydebug = 1;
 	yyparse();
-	display_tree(root, 0);
+	if(is_show_syntax_tree)
+		display_tree(root, 0);
 	return 0;
 }
 
 void connect_tree(struct Node** root, int n, ...){
-	//struct Node* child = child1;
 	va_list child_list;
 	va_start(child_list, n);
 	struct Node* child;
@@ -331,7 +334,7 @@ void connect_tree(struct Node** root, int n, ...){
 	va_end(child_list);
 }
 
-void display_tree(struct Node* root, int blank){printf("mmmmmmmmmmm");
+void display_tree(struct Node* root, int blank){
 	int i; 
 	for(i = 0; i < blank; i++){
 		printf("  ");
@@ -341,9 +344,11 @@ void display_tree(struct Node* root, int blank){printf("mmmmmmmmmmm");
 		printf("  (%d)\n", root->line_num);
 	else{
 		if(strcmp(root->name,"INT") == 0)
-			printf(" : %d", atoi(root->subname));
+			printf(" : %d", (int)strtol(root->subname, NULL, 0));
+		else if(strcmp(root->name, "FLOAT") == 0)
+			printf(" : %f", atof(root->subname));
 		else if(strcmp(root->name, "TYPE") == 0 || strcmp(root->name, "ID") == 0)
-			printf(" : %s\n%d", root->subname,strlen(root->subname));	
+			printf(" : %s", root->subname);	
 			
 		printf("\n");
 	}
@@ -353,3 +358,4 @@ void display_tree(struct Node* root, int blank){printf("mmmmmmmmmmm");
 		p = p->brother;
 	}
 }
+

@@ -1,6 +1,7 @@
 %{
 	#include <stdio.h>
 	#include <stdarg.h>
+	#include <string.h>
 	#include "lex.yy.c"
 	struct Node* root;
 	extern void connect_tree(struct Node** root, int n, ...);
@@ -41,6 +42,7 @@
 %%
 /*High-Lever Definitions*/
 Program		:	ExtDefList {
+				printf("HEHEHEHE0%s\n",$$->name);
 				create_tree_node(&$$, "Program", "", 1);
 				connect_tree(&$$, 1, $1);
 				root = $$;
@@ -120,8 +122,9 @@ FunDec		:	ID LP VarList RP	{
 				connect_tree(&$$, 4, $1, $2, $3, $4);
 			}
 		|	ID LP RP	{
+				printf("HEHEHEHE4%s\n",$$->name);
 				create_tree_node(&$$, "FunDec", "", 1);
-				connect_tree(&$$, 3, $1, $2, $3);printf("HEHEHEHE4%s\n",$$->subname);
+				connect_tree(&$$, 3, $1, $2, $3);
 			}
 		;
 VarList		:	ParamDec COMMA VarList	{

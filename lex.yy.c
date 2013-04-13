@@ -381,8 +381,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 33
-#define YY_END_OF_BUFFER 34
+#define YY_NUM_RULES 31
+#define YY_END_OF_BUFFER 32
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -390,35 +390,15 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_acclist[140] =
+static yyconst flex_int16_t yy_accept[71] =
     {   0,
-        5,    5,   34,   32,   33,    1,   32,   33,    2,   33,
-       18,   32,   33,   32,   33,   21,   32,   33,   22,   32,
-       33,   13,   32,   33,   11,   32,   33,    8,   32,   33,
-       12,   32,   33,   17,   32,   33,   14,   32,   33,    5,
-        6,   32,   33,    5,    6,   32,   33,    7,   32,   33,
-       10,   32,   33,    9,   32,   33,   10,   32,   33,   20,
-       32,   33,   23,   32,   33,   24,   32,   33,   20,   32,
-       33,   20,   32,   33,   20,   32,   33,   20,   32,   33,
-       20,   32,   33,   20,   32,   33,   25,   32,   33,   32,
-       33,   26,   32,   33,    1,   10,   15,    6,    3,    5,
-
-        6,    5,    6,   20,   20,   20,   20,   29,   20,   20,
-       20,   20,   16,    4,    5,   20,   20,   19,   20,   20,
-       20,   20,    4,    5,    6,   20,   30,   20,   20,   20,
-       20,   20,   20,   20,   31,   20,   28,   20,   27
-    } ;
-
-static yyconst flex_int16_t yy_accept[72] =
-    {   0,
-        1,    2,    3,    4,    6,    9,   11,   14,   16,   19,
-       22,   25,   28,   31,   34,   37,   40,   44,   48,   51,
-       54,   57,   60,   63,   66,   69,   72,   75,   78,   81,
-       84,   87,   90,   92,   95,   96,   97,   98,   99,   99,
-      102,  104,  104,  105,  106,  107,  109,  110,  111,  112,
-      113,  114,  116,  117,  118,  120,  121,  122,  123,  126,
-      128,  129,  130,  131,  132,  133,  134,  136,  138,  140,
-      140
+        3,    3,   32,   30,    1,    2,   16,   30,   18,   19,
+       11,    9,    6,   10,   15,   12,    3,    3,    5,    8,
+        7,    8,   29,   20,   21,   29,   29,   29,   29,   29,
+       29,   22,   30,   23,    1,    8,   13,    4,    0,    3,
+        3,    0,   29,   29,   29,   26,   29,   29,   29,   29,
+       14,    3,   29,   29,   17,   29,   29,   29,    3,   27,
+       29,   29,   29,   29,   29,   29,   28,   25,   24,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -529,31 +509,28 @@ static yyconst flex_int16_t yy_chk[152] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static yyconst flex_int32_t yy_rule_can_match_eol[34] =
+static yyconst flex_int32_t yy_rule_can_match_eol[32] =
     {   0,
 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+
+static yy_state_type yy_last_accepting_state;
+static char *yy_last_accepting_cpos;
 
 extern int yy_flex_debug;
 int yy_flex_debug = 0;
 
-static yy_state_type *yy_state_buf=0, *yy_state_ptr=0;
-static char *yy_full_match;
-static int yy_lp;
-#define REJECT \
-{ \
-*yy_cp = (yy_hold_char); /* undo effects of setting up yytext */ \
-yy_cp = (yy_full_match); /* restore poss. backed-over text */ \
-++(yy_lp); \
-goto find_rule; \
-}
-
+/* The intent behind this definition is that it'll catch
+ * any uses of REJECT which flex missed.
+ */
+#define REJECT reject_used_but_not_detected
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
 #line 1 "word.l"
 #line 5 "word.l"
+	int is_show_syntax_tree = 1;
 	int yycolumn = 1;
 	
 	#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;\
@@ -563,7 +540,7 @@ char *yytext;
 	#include "Node.h"
 	#include <stdio.h>
 	extern void create_tree_node(struct Node** node, char* name, char* subname, int is_show);
-#line 567 "lex.yy.c"
+#line 544 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -750,9 +727,9 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 29 "word.l"
+#line 30 "word.l"
 
-#line 756 "lex.yy.c"
+#line 733 "lex.yy.c"
 
 	if ( !(yy_init) )
 		{
@@ -761,12 +738,6 @@ YY_DECL
 #ifdef YY_USER_INIT
 		YY_USER_INIT;
 #endif
-
-        /* Create the reject buffer large enough to save one state per allowed character. */
-        if ( ! (yy_state_buf) )
-            (yy_state_buf) = (yy_state_type *)yyalloc(YY_STATE_BUF_SIZE  );
-            if ( ! (yy_state_buf) )
-                YY_FATAL_ERROR( "out of dynamic memory in yylex()" );
 
 		if ( ! (yy_start) )
 			(yy_start) = 1;	/* first start state */
@@ -799,14 +770,15 @@ YY_DECL
 		yy_bp = yy_cp;
 
 		yy_current_state = (yy_start);
-
-		(yy_state_ptr) = (yy_state_buf);
-		*(yy_state_ptr)++ = yy_current_state;
-
 yy_match:
 		do
 			{
 			register YY_CHAR yy_c = yy_ec[YY_SC_TO_UI(*yy_cp)];
+			if ( yy_accept[yy_current_state] )
+				{
+				(yy_last_accepting_state) = yy_current_state;
+				(yy_last_accepting_cpos) = yy_cp;
+				}
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
@@ -814,28 +786,17 @@ yy_match:
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-			*(yy_state_ptr)++ = yy_current_state;
 			++yy_cp;
 			}
 		while ( yy_base[yy_current_state] != 109 );
 
 yy_find_action:
-		yy_current_state = *--(yy_state_ptr);
-		(yy_lp) = yy_accept[yy_current_state];
-find_rule: /* we branch to this label when backing up */
-		for ( ; ; ) /* until we find what rule we matched */
-			{
-			if ( (yy_lp) && (yy_lp) < yy_accept[yy_current_state + 1] )
-				{
-				yy_act = yy_acclist[(yy_lp)];
-					{
-					(yy_full_match) = yy_cp;
-					break;
-					}
-				}
-			--yy_cp;
-			yy_current_state = *--(yy_state_ptr);
-			(yy_lp) = yy_accept[yy_current_state];
+		yy_act = yy_accept[yy_current_state];
+		if ( yy_act == 0 )
+			{ /* have to back up */
+			yy_cp = (yy_last_accepting_cpos);
+			yy_current_state = (yy_last_accepting_state);
+			yy_act = yy_accept[yy_current_state];
 			}
 
 		YY_DO_BEFORE_ACTION;
@@ -854,177 +815,175 @@ do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
 	{ /* beginning of action switch */
+			case 0: /* must back up */
+			/* undo the effects of YY_DO_BEFORE_ACTION */
+			*yy_cp = (yy_hold_char);
+			yy_cp = (yy_last_accepting_cpos);
+			yy_current_state = (yy_last_accepting_state);
+			goto yy_find_action;
+
 case 1:
 YY_RULE_SETUP
-#line 30 "word.l"
+#line 31 "word.l"
 {}
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 31 "word.l"
+#line 32 "word.l"
 { yycolumn = 1;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 32 "word.l"
-{ create_tree_node(&yylval.treeNode, "OCT", "", 0);REJECT;return OCT; }
+#line 33 "word.l"
+{ create_tree_node(&yylval.treeNode, "INT", yytext, 0);return INT; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 33 "word.l"
-{ create_tree_node(&yylval.treeNode, "HEX", "", 0);REJECT;return HEX; }
+#line 34 "word.l"
+{ create_tree_node(&yylval.treeNode, "FLOAT", yytext, 0);return FLOAT; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 34 "word.l"
-{ create_tree_node(&yylval.treeNode, "INT", yytext, 0);return INT; }
+#line 35 "word.l"
+{ create_tree_node(&yylval.treeNode, "SEMI", "", 0);return SEMI; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 35 "word.l"
-{ create_tree_node(&yylval.treeNode, "FLOAT", "", 0);return FLOAT; }
+#line 36 "word.l"
+{ create_tree_node(&yylval.treeNode, "COMMA", "", 0);return COMMA; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 36 "word.l"
-{ create_tree_node(&yylval.treeNode, "SEMI", "", 0);return SEMI; }
+#line 37 "word.l"
+{ create_tree_node(&yylval.treeNode, "ASSIGNOP", "", 0);return ASSIGNOP; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 37 "word.l"
-{ create_tree_node(&yylval.treeNode, "COMMA", "", 0);return COMMA; }
+#line 38 "word.l"
+{ create_tree_node(&yylval.treeNode, "RELOP", "", 0);return RELOP; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 38 "word.l"
-{ create_tree_node(&yylval.treeNode, "ASSIGNOP", "", 0);return ASSIGNOP; }
+#line 39 "word.l"
+{ create_tree_node(&yylval.treeNode, "PLUS", "", 0);return PLUS; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 39 "word.l"
-{ create_tree_node(&yylval.treeNode, "RELOP", "", 0);return RELOP; }
+#line 40 "word.l"
+{ create_tree_node(&yylval.treeNode, "MINUS", "", 0);return MINUS; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 40 "word.l"
-{ create_tree_node(&yylval.treeNode, "PLUS", "", 0);return PLUS; }
+#line 41 "word.l"
+{ create_tree_node(&yylval.treeNode, "STAR", "", 0);return STAR; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 41 "word.l"
-{ create_tree_node(&yylval.treeNode, "MINUS", "", 0);return MINUS; }
+#line 42 "word.l"
+{ create_tree_node(&yylval.treeNode, "DIV", "", 0);return DIV; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 42 "word.l"
-{ create_tree_node(&yylval.treeNode, "STAR", "", 0);return STAR; }
+#line 43 "word.l"
+{ create_tree_node(&yylval.treeNode, "AND", "", 0);return AND; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 43 "word.l"
-{ create_tree_node(&yylval.treeNode, "DIV", "", 0);return DIV; }
+#line 44 "word.l"
+{ create_tree_node(&yylval.treeNode, "OR", "", 0);return OR; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 44 "word.l"
-{ create_tree_node(&yylval.treeNode, "AND", "", 0);return AND; }
+#line 45 "word.l"
+{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return DOT; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 45 "word.l"
-{ create_tree_node(&yylval.treeNode, "OR", "", 0);return OR; }
+#line 46 "word.l"
+{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return NOT; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 46 "word.l"
-{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return DOT; }
+#line 47 "word.l"
+{ create_tree_node(&yylval.treeNode, "TYPE", yytext, 0);return TYPE; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 47 "word.l"
-{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return NOT; }
+#line 48 "word.l"
+{ create_tree_node(&yylval.treeNode, "LP", "", 0);return LP; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 48 "word.l"
-{ create_tree_node(&yylval.treeNode, "TYPE", yytext, 0);return TYPE; }
+#line 49 "word.l"
+{ create_tree_node(&yylval.treeNode, "RP", "", 0);return RP; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 49 "word.l"
-{ create_tree_node(&yylval.treeNode, "ID", yytext, 0);return ID; }
+#line 50 "word.l"
+{ create_tree_node(&yylval.treeNode, "LB", "", 0);return LB; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 50 "word.l"
-{ create_tree_node(&yylval.treeNode, "LP", "", 0);return LP; }
+#line 51 "word.l"
+{ create_tree_node(&yylval.treeNode, "RB", "", 0);return RB; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 51 "word.l"
-{ create_tree_node(&yylval.treeNode, "RP", "", 0);return RP; }
+#line 52 "word.l"
+{ create_tree_node(&yylval.treeNode, "LC", "", 0);return LC; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 52 "word.l"
-{ create_tree_node(&yylval.treeNode, "LB", "", 0);return LB; }
+#line 53 "word.l"
+{ create_tree_node(&yylval.treeNode, "RC", "", 0);return RC; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 53 "word.l"
-{ create_tree_node(&yylval.treeNode, "RB", "", 0);return RB; }
+#line 54 "word.l"
+{ create_tree_node(&yylval.treeNode, "STRUCT", "", 0);return STRUCT; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 54 "word.l"
-{ create_tree_node(&yylval.treeNode, "LC", "", 0);return LC; }
+#line 55 "word.l"
+{ create_tree_node(&yylval.treeNode, "RETURN", "", 0);return RETURN; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 55 "word.l"
-{ create_tree_node(&yylval.treeNode, "RC", "", 0);return RC; }
+#line 56 "word.l"
+{ create_tree_node(&yylval.treeNode, "IF", "", 0);return IF; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 56 "word.l"
-{ create_tree_node(&yylval.treeNode, "STRUCT", "", 0);return STRUCT; }
+#line 57 "word.l"
+{ create_tree_node(&yylval.treeNode, "ELSE", "", 0);return ELSE; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 57 "word.l"
-{ create_tree_node(&yylval.treeNode, "RETURN", "", 0);return RETURN; }
+#line 58 "word.l"
+{ create_tree_node(&yylval.treeNode, "WHILE", "", 0);return WHILE; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 58 "word.l"
-{ create_tree_node(&yylval.treeNode, "IF", "", 0);return IF; }
+#line 59 "word.l"
+{ create_tree_node(&yylval.treeNode, "ID", yytext, 0);return ID; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 59 "word.l"
-{ create_tree_node(&yylval.treeNode, "ELSE", "", 0);return ELSE; }
-	YY_BREAK
-case 31:
-YY_RULE_SETUP
 #line 60 "word.l"
-{ create_tree_node(&yylval.treeNode, "WHILE", "", 0);return WHILE; }
-	YY_BREAK
-case 32:
-YY_RULE_SETUP
-#line 61 "word.l"
 {
-		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, "");
+		is_show_syntax_tree = 0;
+		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
 	}
 	YY_BREAK
-case 33:
+case 31:
 YY_RULE_SETUP
 #line 64 "word.l"
 ECHO;
 	YY_BREAK
-#line 1026 "lex.yy.c"
-			case YY_STATE_EOF(INITIAL):
-				yyterminate();
+#line 985 "lex.yy.c"
+case YY_STATE_EOF(INITIAL):
+	yyterminate();
 
 	case YY_END_OF_BUFFER:
 		{
@@ -1214,8 +1173,37 @@ static int yy_get_next_buffer (void)
 		while ( num_to_read <= 0 )
 			{ /* Not enough room in the buffer - grow it. */
 
-			YY_FATAL_ERROR(
-"input buffer overflow, can't enlarge buffer because scanner uses REJECT" );
+			/* just a shorter name for the current buffer */
+			YY_BUFFER_STATE b = YY_CURRENT_BUFFER;
+
+			int yy_c_buf_p_offset =
+				(int) ((yy_c_buf_p) - b->yy_ch_buf);
+
+			if ( b->yy_is_our_buffer )
+				{
+				int new_size = b->yy_buf_size * 2;
+
+				if ( new_size <= 0 )
+					b->yy_buf_size += b->yy_buf_size / 8;
+				else
+					b->yy_buf_size *= 2;
+
+				b->yy_ch_buf = (char *)
+					/* Include room in for 2 EOB chars. */
+					yyrealloc((void *) b->yy_ch_buf,b->yy_buf_size + 2  );
+				}
+			else
+				/* Can't grow it, we don't own it. */
+				b->yy_ch_buf = 0;
+
+			if ( ! b->yy_ch_buf )
+				YY_FATAL_ERROR(
+				"fatal error - scanner input buffer overflow" );
+
+			(yy_c_buf_p) = &b->yy_ch_buf[yy_c_buf_p_offset];
+
+			num_to_read = YY_CURRENT_BUFFER_LVALUE->yy_buf_size -
+						number_to_move - 1;
 
 			}
 
@@ -1274,12 +1262,14 @@ static int yy_get_next_buffer (void)
     
 	yy_current_state = (yy_start);
 
-	(yy_state_ptr) = (yy_state_buf);
-	*(yy_state_ptr)++ = yy_current_state;
-
 	for ( yy_cp = (yytext_ptr) + YY_MORE_ADJ; yy_cp < (yy_c_buf_p); ++yy_cp )
 		{
 		register YY_CHAR yy_c = (*yy_cp ? yy_ec[YY_SC_TO_UI(*yy_cp)] : 1);
+		if ( yy_accept[yy_current_state] )
+			{
+			(yy_last_accepting_state) = yy_current_state;
+			(yy_last_accepting_cpos) = yy_cp;
+			}
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
@@ -1287,7 +1277,6 @@ static int yy_get_next_buffer (void)
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-		*(yy_state_ptr)++ = yy_current_state;
 		}
 
 	return yy_current_state;
@@ -1301,8 +1290,14 @@ static int yy_get_next_buffer (void)
     static yy_state_type yy_try_NUL_trans  (yy_state_type yy_current_state )
 {
 	register int yy_is_jam;
-    
+    	register char *yy_cp = (yy_c_buf_p);
+
 	register YY_CHAR yy_c = 1;
+	if ( yy_accept[yy_current_state] )
+		{
+		(yy_last_accepting_state) = yy_current_state;
+		(yy_last_accepting_cpos) = yy_cp;
+		}
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
@@ -1311,8 +1306,6 @@ static int yy_get_next_buffer (void)
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 	yy_is_jam = (yy_current_state == 70);
-	if ( ! yy_is_jam )
-		*(yy_state_ptr)++ = yy_current_state;
 
 	return yy_is_jam ? 0 : yy_current_state;
 }
@@ -1913,11 +1906,6 @@ static int yy_init_globals (void)
     (yy_init) = 0;
     (yy_start) = 0;
 
-    (yy_state_buf) = 0;
-    (yy_state_ptr) = 0;
-    (yy_full_match) = 0;
-    (yy_lp) = 0;
-
 /* Defined in main.c */
 #ifdef YY_STDINIT
     yyin = stdin;
@@ -1947,9 +1935,6 @@ int yylex_destroy  (void)
 	/* Destroy the stack itself. */
 	yyfree((yy_buffer_stack) );
 	(yy_buffer_stack) = NULL;
-
-    yyfree ( (yy_state_buf) );
-    (yy_state_buf)  = NULL;
 
     /* Reset the globals. This is important in a non-reentrant scanner so the next time
      * yylex() is called, initialization will occur. */
@@ -2012,7 +1997,8 @@ void yyfree (void * ptr )
 void create_tree_node(struct Node** node, char* name, char* subname, int is_show){
 	*node = (struct Node*)malloc(sizeof(struct Node));
 	(*node)->name = name;
-	(*node)->subname = subname;
+	(*node)->subname = (char*)malloc(sizeof(char)*10);
+	strcpy((*node)->subname, subname);
 	(*node)->line_num = yylineno;
 	(*node)->show_line_num = is_show;
 	(*node)->brother = NULL;
