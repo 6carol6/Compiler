@@ -2,6 +2,7 @@
 yylineno = 1
 
 %{
+	int is_show_syntax_tree = 1;
 	int yycolumn = 1;
 	
 	#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;\
@@ -22,17 +23,15 @@ digit	[0-9]
 oct     0[0-7]+
 hex	0[xX][0-9A-Fa-f]+
 type	int|float
-int     0|[1-9]?{digit}*|{hex}|{oct}
-float	({int}|"")\.?{digit}+
+int     0|[1-9]{digit}*|{oct}|{hex}
+float	{int}\.{digit}+
 id	{letter_}({letter_}|{digit})*
 
 %%
 {ws}	{}
 \n	{ yycolumn = 1;}
-{oct}	{ create_tree_node(&yylval.treeNode, "OCT", "", 0);REJECT;return OCT; }
-{hex}	{ create_tree_node(&yylval.treeNode, "HEX", "", 0);REJECT;return HEX; }
 {int}	{ create_tree_node(&yylval.treeNode, "INT", yytext, 0);return INT; }
-{float}	{ create_tree_node(&yylval.treeNode, "FLOAT", "", 0);return FLOAT; }
+{float}	{ create_tree_node(&yylval.treeNode, "FLOAT", yytext, 0);return FLOAT; }
 ";"	{ create_tree_node(&yylval.treeNode, "SEMI", "", 0);return SEMI; }
 ","	{ create_tree_node(&yylval.treeNode, "COMMA", "", 0);return COMMA; }
 "="	{ create_tree_node(&yylval.treeNode, "ASSIGNOP", "", 0);return ASSIGNOP; }
@@ -46,7 +45,6 @@ id	{letter_}({letter_}|{digit})*
 "."	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return DOT; }
 "!"	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return NOT; }
 {type}	{ create_tree_node(&yylval.treeNode, "TYPE", yytext, 0);return TYPE; }
-{id}	{ create_tree_node(&yylval.treeNode, "ID", yytext, 0);return ID; }
 "("	{ create_tree_node(&yylval.treeNode, "LP", "", 0);return LP; }
 ")"	{ create_tree_node(&yylval.treeNode, "RP", "", 0);return RP; }
 "["	{ create_tree_node(&yylval.treeNode, "LB", "", 0);return LB; }
@@ -58,14 +56,17 @@ id	{letter_}({letter_}|{digit})*
 "if"	{ create_tree_node(&yylval.treeNode, "IF", "", 0);return IF; }
 "else"	{ create_tree_node(&yylval.treeNode, "ELSE", "", 0);return ELSE; }
 "while"	{ create_tree_node(&yylval.treeNode, "WHILE", "", 0);return WHILE; }
+{id}	{ create_tree_node(&yylval.treeNode, "ID", yytext, 0);return ID; }
 .	{
-		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, "");
+		is_show_syntax_tree = 0;
+		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
 	}
 %%
 void create_tree_node(struct Node** node, char* name, char* subname, int is_show){
 	*node = (struct Node*)malloc(sizeof(struct Node));
 	(*node)->name = name;
-	(*node)->subname = subname;printf("NG!!!!%s\n", (*node)->subname);
+	(*node)->subname = (char*)malloc(sizeof(char)*10);
+	strcpy((*node)->subname, subname);
 	(*node)->line_num = yylineno;
 	(*node)->show_line_num = is_show;
 	(*node)->brother = NULL;

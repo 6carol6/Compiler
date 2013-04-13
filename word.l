@@ -23,8 +23,8 @@ digit	[0-9]
 oct     0[0-7]+
 hex	0[xX][0-9A-Fa-f]+
 type	int|float
-int     0|[1-9]?{digit}*|{hex}|{oct}
-float	({int}|"")\.?{digit}+
+int     0|[1-9]{digit}*|{oct}|{hex}
+float	(0|[1-9]{digit}*)\.{digit}+
 id	{letter_}({letter_}|{digit})*
 
 %%
