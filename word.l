@@ -44,7 +44,6 @@ id	{letter_}({letter_}|{digit})*
 "||"	{ create_tree_node(&yylval.treeNode, "OR", "", 0);return OR; }
 "."	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return DOT; }
 "!"	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return NOT; }
-{type}	{ create_tree_node(&yylval.treeNode, "TYPE", yytext, 0);return TYPE; }
 "("	{ create_tree_node(&yylval.treeNode, "LP", "", 0);return LP; }
 ")"	{ create_tree_node(&yylval.treeNode, "RP", "", 0);return RP; }
 "["	{ create_tree_node(&yylval.treeNode, "LB", "", 0);return LB; }
@@ -56,10 +55,12 @@ id	{letter_}({letter_}|{digit})*
 "if"	{ create_tree_node(&yylval.treeNode, "IF", "", 0);return IF; }
 "else"	{ create_tree_node(&yylval.treeNode, "ELSE", "", 0);return ELSE; }
 "while"	{ create_tree_node(&yylval.treeNode, "WHILE", "", 0);return WHILE; }
+{type}	{ create_tree_node(&yylval.treeNode, "TYPE", yytext, 0);return TYPE; }
 {id}	{ create_tree_node(&yylval.treeNode, "ID", yytext, 0);return ID; }
 .	{
 		is_show_syntax_tree = 0;
 		printf("Error type A at line %d: Mysterious character \'%s\'\n", yylineno, yytext);
+		is_show_syntax_tree = 0;
 	}
 %%
 void create_tree_node(struct Node** node, char* name, char* subname, int is_show){
