@@ -51,20 +51,20 @@
      RETURN = 269,
      IF = 270,
      WHILE = 271,
-     DOT = 272,
-     RB = 273,
-     LB = 274,
-     RP = 275,
-     LP = 276,
-     NOT = 277,
+     ASSIGNOP = 272,
+     OR = 273,
+     AND = 274,
+     RELOP = 275,
+     MINUS = 276,
+     PLUS = 277,
      DIV = 278,
      STAR = 279,
-     MINUS = 280,
-     PLUS = 281,
-     RELOP = 282,
-     AND = 283,
-     OR = 284,
-     ASSIGNOP = 285,
+     NOT = 280,
+     DOT = 281,
+     RB = 282,
+     LB = 283,
+     RP = 284,
+     LP = 285,
      LOWER_THAN_ELSE = 286,
      ELSE = 287
    };
@@ -77,7 +77,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 14 "syntax.y"
+#line 13 "syntax.y"
 struct Node* treeNode;
 
 

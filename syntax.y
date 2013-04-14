@@ -7,7 +7,6 @@
 	struct Node* root;
 	extern void connect_tree(struct Node** root, int n, ...);
 	extern void display_tree(struct Node* root, int blank);
-	extern char *i_format(char *num);
 %}
 
 /*declared types*/
@@ -23,14 +22,14 @@
 %token <treeNode> TYPE STRUCT RETURN IF WHILE
 
 /*Associativity*/
-%left <treeNode> LP RP LB RB DOT
-%right <treeNode> NOT// MINUS
-%left <treeNode> STAR DIV
-%left <treeNode> PLUS MINUS
-%left <treeNode> RELOP
-%left <treeNode> AND
-%left <treeNode> OR
 %right <treeNode> ASSIGNOP
+%left <treeNode> OR
+%left <treeNode> AND
+%left <treeNode> RELOP
+%left <treeNode> PLUS MINUS
+%left <treeNode> STAR DIV
+%right <treeNode> NOT// MINUS
+%left <treeNode> LP RP LB RB DOT
 %nonassoc <treeNode> LOWER_THAN_ELSE
 %nonassoc <treeNode> ELSE
 
@@ -48,14 +47,12 @@ Program		:	ExtDefList {
 				connect_tree(&$$, 1, $1);
 				root = $$;
 			}
-//		|	error RP	{is_show_syntax_tree = 0;}
 		;
 ExtDefList	:	ExtDef ExtDefList {
 				create_tree_node(&$$, "ExtDefList", "", 1);
 				connect_tree(&$$, 2, $1, $2);
 			}
 		|	/*empty*/	{$$ = NULL;}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 ExtDef		:	Specifier ExtDecList SEMI {
 				create_tree_node(&$$, "ExtDef", "", 1);
@@ -69,6 +66,7 @@ ExtDef		:	Specifier ExtDecList SEMI {
 				create_tree_node(&$$, "ExtDef", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
+		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 ExtDecList	:	VarDec	{
 				create_tree_node(&$$, "ExtDecList", "", 1);
@@ -78,7 +76,6 @@ ExtDecList	:	VarDec	{
 				create_tree_node(&$$, "ExtDecList", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 /*Specifiers*/
 Specifier	:	TYPE	{
@@ -104,13 +101,11 @@ OptTag		:	ID	{
 				connect_tree(&$$, 1, $1);
 			}
 		|	/*empty*/	{$$ = NULL;}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 Tag		:	ID	{
 				create_tree_node(&$$, "Tag", "", 1);
 				connect_tree(&$$, 1, $1);
 			}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 /*Declarators*/
 VarDec		:	ID	{
@@ -121,7 +116,6 @@ VarDec		:	ID	{
 				create_tree_node(&$$, "VarDec", "", 1);
 				connect_tree(&$$, 4, $1, $2, $3, $4);
 			}
-//		|	error RC	{is_show_syntax_tree = 0;}
 		;
 FunDec		:	ID LP VarList RP	{
 				create_tree_node(&$$, "FunDec", "", 1);
@@ -131,7 +125,7 @@ FunDec		:	ID LP VarList RP	{
 				create_tree_node(&$$, "FunDec", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
+		|	error RP	{is_show_syntax_tree = 0;}
 		;
 VarList		:	ParamDec COMMA VarList	{
 				create_tree_node(&$$, "VarList", "", 1);
@@ -141,13 +135,11 @@ VarList		:	ParamDec COMMA VarList	{
 				create_tree_node(&$$, "VarList", "", 1);
 				connect_tree(&$$, 1, $1);
 			}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 ParamDec	:	Specifier VarDec	{
 				create_tree_node(&$$, "ParamDec", "", 1);
 				connect_tree(&$$, 2, $1, $2);
 			}
-//		|	error RC	{is_show_syntax_tree = 0;}
 		;
 /*Statements*/
 CompSt		:	LC DefList StmtList RC	{
@@ -161,7 +153,6 @@ StmtList	:	Stmt StmtList	{
 				connect_tree(&$$, 2, $1, $2);
 			}
 		|	/*empty*/	{$$ = NULL;}
-//		|	error RP	{is_show_syntax_tree = 0;}
 		;
 Stmt		:	Exp SEMI	{
 				create_tree_node(&$$, "Stmt", "", 1);
@@ -187,7 +178,6 @@ Stmt		:	Exp SEMI	{
 				create_tree_node(&$$, "Stmt", "", 1);
 				connect_tree(&$$, 5, $1, $2, $3, $4, $5);
 			}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 /*Local Definitions*/
 DefList		:	Def DefList	{
@@ -200,7 +190,7 @@ Def		:	Specifier DecList SEMI	{
 				create_tree_node(&$$, "Def", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-		|	error SEMI	{is_show_syntax_tree = 0;}
+		|	error SEMI	{is_show_syntax_tree = 0; }
 		;
 DecList		:	Dec	{
 				create_tree_node(&$$, "DecList", "", 1);
@@ -210,7 +200,6 @@ DecList		:	Dec	{
 				create_tree_node(&$$, "DecList", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-//		|	error RP	{is_show_syntax_tree = 0;}
 		;
 Dec		:	VarDec	{
 				create_tree_node(&$$, "Dec", "", 1);
@@ -220,7 +209,6 @@ Dec		:	VarDec	{
 				create_tree_node(&$$, "Dec", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 /*Expressions*/
 Exp		:	Exp ASSIGNOP Exp	{
@@ -295,8 +283,6 @@ Exp		:	Exp ASSIGNOP Exp	{
 					create_tree_node(&$$, "Exp", "", 1);
 					connect_tree(&$$, 1, $1);
 				}
-//		|	error RP	{is_show_syntax_tree = 0;}
-//		|	Exp LB error RB	{is_show_syntax_tree = 0;}
 		;
 Args		:	Exp COMMA Args	{
 				create_tree_node(&$$, "Args", "", 1);
@@ -306,11 +292,9 @@ Args		:	Exp COMMA Args	{
 				create_tree_node(&$$, "Args", "", 1);
 				connect_tree(&$$, 1, $1);
 			}
-//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 %%
 yyerror(char* msg){
-	//if(is_show_syntax_tree)
 	fprintf(stderr, "Error type B at line %d: %s\n", yylineno, msg);
 	is_show_syntax_tree = 0;
 }
@@ -323,7 +307,7 @@ int main(int argc, char** argv){
 	  return 1;
 	}
 	yyrestart(f);
-	//yydebug = 1;
+//	yydebug = 1;
 	yyparse();
 	if(is_show_syntax_tree)
 		display_tree(root, 0);

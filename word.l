@@ -3,25 +3,22 @@ yylineno = 1
 
 %{
 	int is_show_syntax_tree = 1;
-	int yycolumn = 1;
-	
-	#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;\
-	yylloc.first_column = yycolumn;yylloc.last_column = yycolumn+yyleng-1;\
-	yycolumn += yyleng;
 	#include "syntax.tab.h"
 	#include "Node.h"
 	#include <stdio.h>
 	extern void create_tree_node(struct Node** node, char* name, char* subname, int is_show);
 %}
 
-delim	[ \t]
+delim	[ \t\n]
 ws	{delim}+
 relop	>|>=|<|<=|==|!=
 letter	[A-Za-z]
 letter_	[A-Za-z_]
 digit	[0-9]
 oct     0[0-7]+
+error_oct 0[0-9]+
 hex	0[xX][0-9A-Fa-f]+
+error_hex 0[xX][0-9A-Za-z]+
 type	int|float
 int     0|[1-9]{digit}*|{oct}|{hex}
 float	(0|[1-9]{digit}*)\.{digit}+
@@ -29,8 +26,9 @@ id	{letter_}({letter_}|{digit})*
 
 %%
 {ws}	{}
-\n	{ yycolumn = 1;}
 {int}	{ create_tree_node(&yylval.treeNode, "INT", yytext, 0);return INT; }
+{error_oct}	{ printf("Error type A at line %d: Illegal octal number \'%s\'\n", yylineno, yytext); }
+{error_hex}	{ printf("Error type A at line %d: Illegal hexadecimal number \'%s\'\n", yylineno, yytext); }
 {float}	{ create_tree_node(&yylval.treeNode, "FLOAT", yytext, 0);return FLOAT; }
 ";"	{ create_tree_node(&yylval.treeNode, "SEMI", "", 0);return SEMI; }
 ","	{ create_tree_node(&yylval.treeNode, "COMMA", "", 0);return COMMA; }
@@ -42,7 +40,7 @@ id	{letter_}({letter_}|{digit})*
 "/"	{ create_tree_node(&yylval.treeNode, "DIV", "", 0);return DIV; }
 "&&"	{ create_tree_node(&yylval.treeNode, "AND", "", 0);return AND; }
 "||"	{ create_tree_node(&yylval.treeNode, "OR", "", 0);return OR; }
-"."	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return DOT; }
+"."	{ create_tree_node(&yylval.treeNode, "DOT", "", 0);return DOT; }
 "!"	{ create_tree_node(&yylval.treeNode, "NOT", "", 0);return NOT; }
 "("	{ create_tree_node(&yylval.treeNode, "LP", "", 0);return LP; }
 ")"	{ create_tree_node(&yylval.treeNode, "RP", "", 0);return RP; }
