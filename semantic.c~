@@ -88,7 +88,7 @@ void find_type(struct Node* root){
 			p = p->brother;
 		}
 		if(strcmp(root->children->name, "VarDec") == 0){
-			//这部分是对数组的处理
+			//这部分事关坑爹的数组，俺暂时不想鸟它
 			p = root->children;
 			p->type = (Type)malloc(sizeof(struct Type_));
 			p->type->kind = array;
