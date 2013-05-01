@@ -40,33 +40,31 @@
      INT = 258,
      FLOAT = 259,
      ID = 260,
-     OCT = 261,
-     HEX = 262,
-     SEMI = 263,
-     COMMA = 264,
-     LC = 265,
-     RC = 266,
-     TYPE = 267,
-     STRUCT = 268,
-     RETURN = 269,
-     IF = 270,
-     WHILE = 271,
-     ASSIGNOP = 272,
-     OR = 273,
-     AND = 274,
-     RELOP = 275,
-     MINUS = 276,
-     PLUS = 277,
-     DIV = 278,
-     STAR = 279,
-     NOT = 280,
-     DOT = 281,
-     RB = 282,
-     LB = 283,
-     RP = 284,
-     LP = 285,
-     LOWER_THAN_ELSE = 286,
-     ELSE = 287
+     SEMI = 261,
+     COMMA = 262,
+     LC = 263,
+     RC = 264,
+     TYPE = 265,
+     STRUCT = 266,
+     RETURN = 267,
+     IF = 268,
+     WHILE = 269,
+     ASSIGNOP = 270,
+     OR = 271,
+     AND = 272,
+     RELOP = 273,
+     MINUS = 274,
+     PLUS = 275,
+     DIV = 276,
+     STAR = 277,
+     NOT = 278,
+     DOT = 279,
+     RB = 280,
+     LB = 281,
+     RP = 282,
+     LP = 283,
+     LOWER_THAN_ELSE = 284,
+     ELSE = 285
    };
 #endif
 
@@ -82,7 +80,7 @@ struct Node* treeNode;
 
 
 /* Line 2068 of yacc.c  */
-#line 86 "syntax.tab.h"
+#line 84 "syntax.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

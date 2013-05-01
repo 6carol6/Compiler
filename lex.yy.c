@@ -535,7 +535,7 @@ char *yytext;
 #line 5 "word.l"
 	int is_show_syntax_tree = 1;
 	#include "syntax.tab.h"
-	#include "Node.h"
+	#include "def.h"
 	#include <stdio.h>
 	extern void create_tree_node(struct Node** node, char* name, char* subname, int is_show);
 #line 542 "lex.yy.c"
@@ -2008,4 +2008,5 @@ void create_tree_node(struct Node** node, char* name, char* subname, int is_show
 	(*node)->brother = NULL;
 	(*node)->children = NULL;
 }
+
 

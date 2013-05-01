@@ -1,0 +1,10 @@
+void create_tree_node(struct Node** node, char* name, char* subname, int is_show){
+	*node = (struct Node*)malloc(sizeof(struct Node));
+	(*node)->name = name;
+	(*node)->subname = (char*)malloc(sizeof(char)*10);
+	strcpy((*node)->subname, subname);
+	(*node)->line_num = yylineno;
+	(*node)->show_line_num = is_show;
+	(*node)->brother = NULL;
+	(*node)->children = NULL;
+}

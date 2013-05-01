@@ -1,0 +1,4 @@
+#!/bin/sh
+flex word.l
+bison -d syntax.y
+gcc syntax.tab.c semantic.c -lfl -ly -o parse

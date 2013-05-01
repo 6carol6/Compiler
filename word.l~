@@ -63,7 +63,7 @@ id	{letter_}({letter_}|{digit})*
 %%
 void create_tree_node(struct Node** node, char* name, char* subname, int is_show){
 	*node = (struct Node*)malloc(sizeof(struct Node));
-	(*node)->name = name;
+	(*node)->name = name;	printf("!!!!!!!!!!!!!!!!!%s!!!!!!!!!!!!!!!!!",(*node)->name);
 	(*node)->subname = (char*)malloc(sizeof(char)*10);
 	strcpy((*node)->subname, subname);
 	(*node)->line_num = yylineno;
