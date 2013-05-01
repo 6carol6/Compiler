@@ -15,13 +15,13 @@ void push(){
 	}
 }
 
-struct Stack* pop(){
+struct Stack pop(){
 	if(top < 0){
 		printf("ERROR: Stack is empty!\n");
 		return;
 	}
 	top--;
-	return &stack[top+1];
+	return stack[top+1];
 }
 
 struct Stack* getFirst(){

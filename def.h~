@@ -45,7 +45,7 @@ Func func_table[MAXN];
 struct Stack{
 	Symbol head;
 	int start;//表示这是一个函数的开始
-};
+}
 
 struct Node {
 	char* name;
