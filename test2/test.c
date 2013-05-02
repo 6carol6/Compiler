@@ -1,7 +1,5 @@
-int a;
-int main(int a){
-	int a,b;
-}
-int main(int c){
-
-}
+struct a{
+	int x;
+	float e = 1;
+	int x;
+};
