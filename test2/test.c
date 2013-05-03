@@ -1,5 +1,5 @@
-struct a{
-	int x;
-	float e = 1;
-	int x;
-};
+int a[2][3][4];
+int main(){
+	float i;
+	a[i][2];
+}

@@ -1,11 +1,10 @@
 #ifndef __DEFINE_H__
 #define __DEFINE_H__
-#define MAXN 32768
+#define MAXN 16384
 #define STACK_MAXN 100
 #define TYPE_INT 0
 #define TYPE_FLOAT 1
 typedef struct Type_* Type;
-typedef struct FieldList_* FieldList;
 typedef struct Symbol_* Symbol;
 typedef struct Func_* Func;
 typedef struct Struc_* Struc;
@@ -15,14 +14,8 @@ struct Type_{
 	union{
 		int basic;
 		struct {Type elem; int size;}array;
-		FieldList structure;
+		Symbol structure;
 	}u;
-};
-
-struct FieldList_{
-	char* name;
-	Type type;
-	FieldList tail;
 };
 
 struct Symbol_{
@@ -32,6 +25,7 @@ struct Symbol_{
 	Symbol stack_next;
 	int is_para;//是否是函数的参数
 	int lineno;
+	char* stru_name;
 };
 Symbol symbol_table[MAXN];
 
@@ -60,6 +54,7 @@ struct Node {
 	struct Node* brother;
 	struct Node* children;
 	Type type;
+	char* stru_name;
 };
 
 #endif

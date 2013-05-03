@@ -17,13 +17,19 @@ Struc get_struc(char* name);
 
 int is_para = 0;//函数参数开关
 int in_struct = 0;//结构体报错开关
+Struc stru_temp;
 
 //===============遍历树==============
 void find_type(struct Node* root){
-	
 	if(strcmp(root->name, "ExtDecList") == 0 || strcmp(root->name, "DecList") == 0 || strcmp(root->name, "Dec") == 0){
 		if(root->type != NULL){
 			root->children->type = root->type;
+			root->children->stru_name = root->stru_name;
+			struct Node* p = root->brother;
+			while(p != NULL){
+				p->type = root->type;
+				p = p->brother;
+			}
 		}else{
 			printf("ERROR: no type!\n");
 		}
@@ -39,39 +45,34 @@ void find_type(struct Node* root){
 				root->type->u.basic = TYPE_FLOAT;
 			else
 				printf("ERROR: Undefined basic type!\n");
-			struct Node* p = root->brother;
-			while(p != NULL){
-				p->type = root->type;
-				p = p->brother;
-			}
 		}
 		else if(strcmp(root->children->name, "StructSpecifier") == 0){
 			struct Node* p = root->children->children->brother;
-			if(strcmp(p->name, "OptTag") == 0){
+			if(strcmp(p->name, "OptTag") == 0){//结构类型的定义
 				push();
 				in_struct = 1;
-				Struc temp = (Struc)malloc(sizeof(struct Struc_));
-				temp->name = p->children->subname;
-				temp->lineno = p->children->line_num;
-				temp->type = (Type)malloc(sizeof(struct Type_));
-				temp->type->kind = structure;
-				temp->type->u.structure = (FieldList)malloc(sizeof(struct FieldList_));
-				FieldList t = temp->type->u.structure;
-				Symbol q = (Symbol)getFirst();
-				while(q != NULL){
-					t->name = q->name;
-					t->type = q->type;
-					if(q->stack_next != NULL){
-						t->tail = (FieldList)malloc(sizeof(struct FieldList_));
-						t = t->tail;
-					}
-					q = q->stack_next;
+				stru_temp = (Struc)malloc(sizeof(struct Struc_));
+				stru_temp->name = p->children->subname;
+				stru_temp->lineno = p->children->line_num;
+				stru_temp->type = (Type)malloc(sizeof(struct Type_));
+				stru_temp->type->kind = structure;
+			}else{//结构类型的使用struct a b;
+				char* name = p->children->subname;
+				Struc temp = (Struc)get_struc(name);
+				if(temp == NULL){
+					printf("Error type 17 at line %d: Undefined struct '%s'\n", p->children->line_num, name);
+					return;
+				}else{
+					root->type = temp->type;
+					root->stru_name = temp->name;
 				}
-				fill_struct(temp);
-				
-			}else{//struct a;
-				return;
 			}
+		}
+		struct Node* p = root->brother;
+		while(p != NULL){
+			p->type = root->type;
+			p->stru_name = root->stru_name;
+			p = p->brother;
 		}
 	}
 	else if(strcmp(root->name, "VarDec") == 0){
@@ -98,6 +99,7 @@ void find_type(struct Node* root){
 			temp->type = root->children->type;
 			temp->is_para = is_para;
 			temp->lineno = root->children->line_num;
+			temp->stru_name = root->stru_name;
 			fill_symbolt(temp);
 			
 			if(root->brother != NULL && in_struct && strcmp(root->brother->name, "ASSIGNOP") == 0){
@@ -117,35 +119,7 @@ void find_type(struct Node* root){
 			push();//为参数和局部变量准备好一个栈
 			temp->para = (Symbol)getFirst();
 		}else{
-			if(root->brother != NULL){
-				find_type(root->brother);
-			}
-			return;//若函数定义错误，子结构就都不用看了
-		}
-	}
-	else if(strcmp(root->name, "Exp") == 0){
-	//这里分为两个逻辑 1 判断ID是否存在 2 判断各符号是否运算匹配
-		if(strcmp(root->children->name, "ID") == 0){
-		//分为变量使用和函数调用两种情况
-			Symbol p;
-			if(root->children->brother == NULL){//变量使用
-				if((p = search_symbolt(root->children->subname)) == NULL){
-					printf("Error type 1 at line %d: Undefined variable \"%s\"\n", root->children->line_num, root->children->subname);
-					//这里切记不能有return。比如f(a,b)，两个都没定义，如果return，后一个就报不出来了
-				}
-			}
-			else if(strcmp(root->children->brother->name, "LP") == 0){//函数调用
-				char* name = root->children->subname;
-				if(get_func(name) == NULL){
-					printf("Error type 2 at line %d: Undefined function \"%s\"\n", root->children->line_num, root->children->subname);
-				}
-				//参数根据Args判断就好。
-			}
-
-		}
-		else if(strcmp(root->children->name, "Exp") == 0){
-			//还没写还没写！！！！！！！！！！
-			
+			return;//若函数定义错误，子结点和兄弟结点就都不用看了
 		}
 	}
 	else if(strcmp(root->name, "Args") == 0){
@@ -155,8 +129,16 @@ void find_type(struct Node* root){
 		is_para = 0;
 	}
 	else if(strcmp(root->name, "RC") == 0){//在IF while struct等语句的时候也记得push()，不然这里会多pop
+		if(in_struct){
+			stru_temp->type->u.structure = (Symbol)getFirst();
+			fill_struct(stru_temp);
+		}
 		pop();
 		in_struct = 0;
+	}
+	else if(strcmp(root->name, "LB") == 0){
+		if(strcmp(root->brother->name, "Exp") == 0 && strcmp(root->brother->children->name, "FLOAT") == 0)//数组的[]中用float访问
+			printf("Error type 12 at line %d: Operands type mistaken\n", root->brother->children->line_num);
 	}
 	if(root->children != NULL){
 		find_type(root->children);
@@ -164,6 +146,70 @@ void find_type(struct Node* root){
 	if(root->brother != NULL){
 		find_type(root->brother);
 	}
+	
+	if(strcmp(root->name, "Exp") == 0){
+	//这里分为两个逻辑 1 判断ID是否存在 2 判断各符号是否运算匹配
+		if(strcmp(root->children->name, "ID") == 0){
+		//分为变量使用和函数调用两种情况
+			Symbol p;
+			if(root->children->brother == NULL){
+				//变量使用分为：1 普通变量使用 2 数组变量使用 3 结构变量使用
+				if((p = search_symbolt(root->children->subname)) == NULL){
+					printf("Error type 1 at line %d: Undefined variable \"%s\"\n", root->children->line_num, root->children->subname);
+					//这里切记不能有return。比如f(a,b)，两个都没定义，如果return，后一个就报不出来了
+				}
+				else if(root->brother!=NULL && strcmp(root->brother->name, "DOT") == 0){//结构变量b使用b.x
+					//首先判断是不是结构类型
+					if(p->stru_name == NULL){
+						printf("Error type 13 at line %d: Illegal use of \".\"\n", root->brother->line_num);
+					}else{
+						Struc q = (Struc)get_struc(p->stru_name);
+						if(q != NULL){
+							Symbol structure = q->type->u.structure;
+							while(structure != NULL){
+								if(strcmp(structure->name, root->brother->brother->subname) == 0)	break;
+								structure = structure->stack_next;
+							}
+							if(structure == NULL){
+								printf("Error type 14 at line %d: Un-existed field \"%s\"\n",root->brother->brother->line_num, root->brother->brother->subname);
+							}
+						
+						}
+					}
+					//否则判断是否等号两边匹配，这个还没做！！！！！！！--->这句话啥意思？已经看不懂了。。。
+				}
+				else if(root->brother!=NULL && strcmp(root->brother->name, "LB") == 0){//数组变量的使用
+					if(p->type->kind != array)
+						printf("Error type 10 at line %d: \"%s\" must be an array\n", root->children->line_num, p->name);
+				}
+				if(p != NULL)//否则对于没有定义的变量会报段错误
+					root->children->type = p->type;
+			}
+			else if(strcmp(root->children->brother->name, "LP") == 0){//函数调用
+				char* name = root->children->subname;
+				Func temp = (Func)get_func(name);
+				if(temp == NULL){
+					if(search_symbolt(name)== NULL)
+						printf("Error type 2 at line %d: Undefined function \"%s\"\n", root->children->line_num, root->children->subname);
+					else
+						printf("Error type 11 at line %d: \"%s\" must be a function\n", root->children->line_num, root->children->subname);
+				}
+				if(temp != NULL)
+					root->children->type = temp->type;
+				//参数根据Args判断就好。
+			}
+			root->type = root->children->type;
+		}
+		else if(strcmp(root->children->name, "Exp") == 0){
+			if(root->children->type != NULL){//如果不判断，对于为定义的变量会报段错误
+				if(root->children->type->kind == array)
+					root->type = root->children->type->u.array.elem;
+				else
+					root->type = root->children->type;
+			}
+		}
+	}
+
 }
 
 unsigned int hash_pjw(char *name){
@@ -287,6 +333,7 @@ Func get_func(char* name){
 }
 
 Struc get_struc(char* name){
+	if(name == NULL) return NULL;
 	int index = hash_pjw(name);
 	Struc p = struc_table[index];
 	while(p != NULL){
