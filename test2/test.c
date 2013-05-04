@@ -1,5 +1,8 @@
-int a[2][3][4];
+struct a{
+	float x;
+	int x;
+};
 int main(){
-	float i;
-	a[i][2];
+	struct a b;
+	b.x = 1.2;
 }

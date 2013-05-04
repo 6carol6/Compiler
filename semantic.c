@@ -6,7 +6,7 @@
 unsigned int hash_pjw(char *name);
 int conflict_detection(Symbol symbol);
 void fill_symbolt(Symbol symbol);
-int fill_funct(Func func);
+Func fill_funct(Func func);
 int fill_struct(Struc struc);
 
 //===============查表用==============
@@ -15,9 +15,16 @@ Symbol search_symbolt(char* name);
 Func get_func(char* name);
 Struc get_struc(char* name);
 
+//===============判断值==============
+void print_array(Type t);
+void print_type(Type t);
+void print_error9(Func func, struct Node* args);
+int is_type_equal(Type t1, Type t2);
+
 int is_para = 0;//函数参数开关
 int in_struct = 0;//结构体报错开关
 Struc stru_temp;
+Func func_temp;
 
 //===============遍历树==============
 void find_type(struct Node* root){
@@ -115,18 +122,16 @@ void find_type(struct Node* root){
 		temp->name = root->children->subname;
 		temp->type = root->type;
 		temp->lineno = root->line_num;
-		if(fill_funct(temp) == 0){
-			push();//为参数和局部变量准备好一个栈
-			temp->para = (Symbol)getFirst();
-		}else{
-			return;//若函数定义错误，子结点和兄弟结点就都不用看了
-		}
-	}
-	else if(strcmp(root->name, "Args") == 0){
-		//判断函数的参数
+		
+		func_temp = fill_funct(temp);
+		if(func_temp == NULL) return;//插入失败
+		push();//为参数和局部变量准备好一个栈
 	}
 	else if(strcmp(root->name, "RP") == 0){
-		is_para = 0;
+		if(is_para == 1){
+			func_temp->para = (Symbol)getFirst();//等参数准备好了再放到函数里去。。。
+			is_para = 0;
+		}
 	}
 	else if(strcmp(root->name, "RC") == 0){//在IF while struct等语句的时候也记得push()，不然这里会多pop
 		if(in_struct){
@@ -136,10 +141,7 @@ void find_type(struct Node* root){
 		pop();
 		in_struct = 0;
 	}
-	else if(strcmp(root->name, "LB") == 0){
-		if(strcmp(root->brother->name, "Exp") == 0 && strcmp(root->brother->children->name, "FLOAT") == 0)//数组的[]中用float访问
-			printf("Error type 12 at line %d: Operands type mistaken\n", root->brother->children->line_num);
-	}
+
 	if(root->children != NULL){
 		find_type(root->children);
 	}
@@ -194,9 +196,30 @@ void find_type(struct Node* root){
 					else
 						printf("Error type 11 at line %d: \"%s\" must be a function\n", root->children->line_num, root->children->subname);
 				}
-				if(temp != NULL)
+				if(temp != NULL){
+					//判断参数
+					struct Node* args = root->children->brother->brother;
+					Symbol p = temp->para;
+
+					while((p->stack_next!=NULL && p->stack_next->is_para == 1 )&& args->children->brother!=NULL){
+
+						if(!is_type_equal(p->type, args->type)){
+							print_error9(temp, args);
+						}
+						p = p->stack_next;
+						args = args->children->brother->brother;
+					}
+					if(!is_type_equal(p->type, args->type)){
+						print_error9(temp, args);
+					}
+					else if(p->stack_next != NULL && p->stack_next->is_para == 1){//参数传少了
+						print_error9(temp, args);
+					}
+					else if(args->children->brother != NULL){//参数传多了
+						print_error9(temp, args);
+					}
 					root->children->type = temp->type;
-				//参数根据Args判断就好。
+				}
 			}
 			root->type = root->children->type;
 		}
@@ -204,10 +227,74 @@ void find_type(struct Node* root){
 			if(root->children->type != NULL){//如果不判断，对于为定义的变量会报段错误
 				if(root->children->type->kind == array)
 					root->type = root->children->type->u.array.elem;
-				else
+				else if(root->children->type->kind == basic)
 					root->type = root->children->type;
+				else{//结构类型
+					if(root->children->brother == NULL)
+						root->type = root->children->type;
+					else if(strcmp(root->children->brother->name, "DOT") == 0){
+						Symbol p = search_symbolt(root->children->children->subname);
+						Struc s = get_struc(p->stru_name);
+						p = s->type->u.structure;
+						while(p != NULL){
+							if(strcmp(p->name, root->children->brother->brother->subname) == 0)
+							break;
+							p = p->stack_next;
+						}
+						if(p != NULL){//访问了结构体中为定义的域就搜索不到了
+							root->type = p->type;
+						}
+					}
+					else{
+						printf("Unknown error\n");
+						root->type = root->children->type;
+					}
+				}
+
+			}
+			//以下判断赋值符、操作符的匹配
+			struct Node* p = root->children;
+			if(p->brother != NULL){
+				if(strcmp(p->brother->name, "ASSIGNOP") == 0){
+					struct Node* q = p->brother->brother;
+					//要考虑有类型（对于未插入成功的变量是没有类型的）
+					if(p->type!=NULL && q->type!=NULL && !is_type_equal(p->type, q->type)){
+						printf("Error type 5 at line %d: Type mismatched\n", p->line_num);
+					}
+				}
+				if(strcmp(p->brother->name, "PLUS") == 0 || strcmp(p->brother->name, "MINUS") == 0){
+					struct Node* q = p->brother->brother;
+					if(p->type!=NULL && q->type!=NULL && !is_type_equal(p->type, q->type)){
+						printf("Error type 7 at line %d: Operands type mismatched\n", p->line_num);
+					}
+				}
 			}
 		}
+		else if(strcmp(root->children->name, "INT") == 0){
+			root->type = (Type)malloc(sizeof(struct Type_));
+			root->type->kind = basic;
+			root->type->u.basic = TYPE_INT;
+		}
+		else if(strcmp(root->children->name, "FLOAT") == 0){
+			root->type = (Type)malloc(sizeof(struct Type_));
+			root->type->kind = basic;
+			root->type->u.basic = TYPE_FLOAT;
+		}
+	}
+	else if(strcmp(root->name, "LB") == 0){
+		if(strcmp(root->brother->name, "Exp") == 0 && strcmp(root->brother->children->name, "ID") == 0){//float b; a[b];
+			if(root->brother->type->kind != basic || root->brother->type->u.basic == TYPE_FLOAT)
+				printf("Error type 12 at line %d: Operands type mistaken\n", root->brother->children->line_num);
+		}
+		else if(strcmp(root->brother->name, "Exp") == 0 && strcmp(root->brother->children->name, "FLOAT") == 0)//数组的[]中用float访问
+			printf("Error type 12 at line %d: Operands type mistaken\n", root->brother->children->line_num);
+	}
+	else if(strcmp(root->name, "Args") == 0){
+		root->type = root->children->type;
+	}
+	else if(strcmp(root->name, "RETURN") == 0){
+		if(!is_type_equal(func_temp->type, root->brother->type))
+			printf("Error type 8 at line %d: The return type mismatched\n", root->line_num);
 	}
 
 }
@@ -271,7 +358,7 @@ void fill_symbolt(Symbol symbol){
 	}
 }
 
-int fill_funct(Func func){
+Func fill_funct(Func func){
 	int index = hash_pjw(func->name);
 	if(func_table[index] == NULL){
 		func_table[index] = func;
@@ -279,13 +366,13 @@ int fill_funct(Func func){
 		//判断冲突先~
 		if(get_func(func->name) != NULL){
 			printf("Error type 4 at line %d: Redefined function \"%s\"\n", func->lineno, func->name);
-				return 1;
+				return NULL;
 		}
 		func->hash_next = func_table[index];
 		func_table[index] = func;
 	}
 	printf("index:%d\nid:%s\n", index,func->name);
-	return 0;
+	return func;
 }
 
 int fill_struct(Struc struc){
@@ -342,4 +429,70 @@ Struc get_struc(char* name){
 		p = p->hash_next;
 	}
 	return NULL;
+}
+
+int is_type_equal(Type t1, Type t2){
+	if(t1->kind != t2->kind)
+		return 0;
+	if(t1->kind == basic){
+		if(t1->u.basic != t2->u.basic)
+			return 0;
+	}
+	else if(t1->kind = array){
+		return is_type_equal(t1->u.array.elem, t2->u.array.elem);
+	}
+	else{
+		if(strcmp(t1->u.structure->name, t2->u.structure->name) != 0)
+			return 1;
+	}
+	return 1;
+}
+
+void print_error9(Func func, struct Node* args){
+	printf("Error type 9 at line %d: The method \"%s(", args->line_num, func->name);
+	Symbol p = func->para;
+	while(p->stack_next != NULL && p->stack_next->is_para == 1){
+		print_type(p->type);
+		printf(", ");
+		p = p->stack_next;
+	}
+	print_type(p->type);
+	
+	printf(")\" is not applicable for the arguments \"(");
+	while(args->children->brother != NULL){
+		print_type(args->children->type);
+		printf(", ");
+		args = args->children->brother->brother;
+	}
+	print_type(args->children->type);
+	
+	printf(")\"\n");
+}
+
+void print_type(Type t){
+	if(t->kind == basic){
+		if(t->u.basic == TYPE_INT)
+			printf("int");
+		else if(t->u.basic == TYPE_FLOAT)
+			printf("float");
+	}
+	else if(t->kind == structure){
+		printf("struct");
+	}
+	else if(t->kind == array){//这种情况貌似在语法里面不可能，测试不了了吧。。
+		print_array(t);
+	}
+}
+
+void print_array(Type t){
+	if(t->kind == basic){
+		if(t->u.basic == TYPE_INT)
+			printf("int");
+		else if(t->u.basic == TYPE_FLOAT)
+			printf("float");
+	}
+	else if(t->kind == array){
+		print_array(t->u.array.elem);
+		printf("[]");
+	}
 }
