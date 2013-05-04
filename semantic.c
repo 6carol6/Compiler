@@ -129,7 +129,7 @@ void find_type(struct Node* root){
 	}
 	else if(strcmp(root->name, "RP") == 0){
 		if(is_para == 1){
-			func_temp->para = (Symbol)getFirst();//等参数准备好了再放到函数里去。。。
+			func_temp->para = (Symbol)getFirst();//等参数准备好了再放到函数里去
 			is_para = 0;
 		}
 	}
@@ -178,7 +178,6 @@ void find_type(struct Node* root){
 						
 						}
 					}
-					//否则判断是否等号两边匹配，这个还没做！！！！！！！--->这句话啥意思？已经看不懂了。。。
 				}
 				else if(root->brother!=NULL && strcmp(root->brother->name, "LB") == 0){//数组变量的使用
 					if(p->type->kind != array)
@@ -200,23 +199,29 @@ void find_type(struct Node* root){
 					//判断参数
 					struct Node* args = root->children->brother->brother;
 					Symbol p = temp->para;
-
-					while((p->stack_next!=NULL && p->stack_next->is_para == 1 )&& args->children->brother!=NULL){
-
+					if(p == NULL && strcmp(args->name,"RP") != 0){
+						print_error9(temp, args);
+					}
+					else if(p != NULL && strcmp(args->name,"RP") == 0){
+						print_error9(temp, args);
+					}
+					else if(p != NULL){
+						while((p->stack_next!=NULL && p->stack_next->is_para == 1 )&& args->children->brother!=NULL){
+							if(!is_type_equal(p->type, args->type)){
+								print_error9(temp, args);
+							}
+							p = p->stack_next;
+							args = args->children->brother->brother;
+						}
 						if(!is_type_equal(p->type, args->type)){
 							print_error9(temp, args);
 						}
-						p = p->stack_next;
-						args = args->children->brother->brother;
-					}
-					if(!is_type_equal(p->type, args->type)){
-						print_error9(temp, args);
-					}
-					else if(p->stack_next != NULL && p->stack_next->is_para == 1){//参数传少了
-						print_error9(temp, args);
-					}
-					else if(args->children->brother != NULL){//参数传多了
-						print_error9(temp, args);
+						else if(p->stack_next != NULL && p->stack_next->is_para == 1){//参数传少了
+							print_error9(temp, args);
+						}
+						else if(args->children->brother != NULL){//参数传多了
+							print_error9(temp, args);
+						}
 					}
 					root->children->type = temp->type;
 				}
@@ -224,7 +229,7 @@ void find_type(struct Node* root){
 			root->type = root->children->type;
 		}
 		else if(strcmp(root->children->name, "Exp") == 0){
-			if(root->children->type != NULL){//如果不判断，对于为定义的变量会报段错误
+			if(root->children->type != NULL){//如果不判断，对于未定义的变量会报段错误
 				if(root->children->type->kind == array)
 					root->type = root->children->type->u.array.elem;
 				else if(root->children->type->kind == basic)
@@ -261,8 +266,11 @@ void find_type(struct Node* root){
 					if(p->type!=NULL && q->type!=NULL && !is_type_equal(p->type, q->type)){
 						printf("Error type 5 at line %d: Type mismatched\n", p->line_num);
 					}
+					//赋值符号左边出现右值表达式
+					if((strcmp(p->children->name, "ID") != 0 && (p->children->brother == NULL || (strcmp(p->children->brother->name, "LB") != 0 && strcmp(p->children->brother->name, "DOT") != 0))) || (p->children->brother!=NULL && strcmp(p->children->brother->name, "LP") == 0))
+						printf("Error type 6 at line %d: The left-hand side of an assignment must be a variable\n", p->line_num);
 				}
-				if(strcmp(p->brother->name, "PLUS") == 0 || strcmp(p->brother->name, "MINUS") == 0){
+				else if(strcmp(p->brother->name, "PLUS") == 0 || strcmp(p->brother->name, "MINUS") == 0){
 					struct Node* q = p->brother->brother;
 					if(p->type!=NULL && q->type!=NULL && !is_type_equal(p->type, q->type)){
 						printf("Error type 7 at line %d: Operands type mismatched\n", p->line_num);
@@ -451,21 +459,24 @@ int is_type_equal(Type t1, Type t2){
 void print_error9(Func func, struct Node* args){
 	printf("Error type 9 at line %d: The method \"%s(", args->line_num, func->name);
 	Symbol p = func->para;
-	while(p->stack_next != NULL && p->stack_next->is_para == 1){
+	if(p!=NULL){
+		while(p->stack_next != NULL && p->stack_next->is_para == 1){
+			print_type(p->type);
+			printf(", ");
+			p = p->stack_next;
+		}
 		print_type(p->type);
-		printf(", ");
-		p = p->stack_next;
 	}
-	print_type(p->type);
 	
 	printf(")\" is not applicable for the arguments \"(");
-	while(args->children->brother != NULL){
+	if(strcmp(args->name,"RP") != 0){
+		while(args->children->brother != NULL){
+			print_type(args->children->type);
+			printf(", ");
+			args = args->children->brother->brother;
+		}
 		print_type(args->children->type);
-		printf(", ");
-		args = args->children->brother->brother;
 	}
-	print_type(args->children->type);
-	
 	printf(")\"\n");
 }
 

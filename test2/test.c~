@@ -1,7 +1,10 @@
-struct a{
-	float x,x;
+struct z{
+	int x;
 };
+int f(int a){
+}
 int main(){
-	struct a b;
-	b.x = 1.2;
+	int a;
+	x+3 = 1;
+	f() = 1;
 }
