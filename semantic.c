@@ -141,6 +141,9 @@ void find_type(struct Node* root){
 		pop();
 		in_struct = 0;
 	}
+	else if(strcmp(root->name, "IF") == 0 || strcmp(root->name, "ELSE") == 0 || strcmp(root->name, "WHILE") == 0){
+		push();
+	}
 
 	if(root->children != NULL){
 		find_type(root->children);
@@ -235,9 +238,7 @@ void find_type(struct Node* root){
 				else if(root->children->type->kind == basic)
 					root->type = root->children->type;
 				else{//结构类型
-					if(root->children->brother == NULL)
-						root->type = root->children->type;
-					else if(strcmp(root->children->brother->name, "DOT") == 0){
+					if(root->children->brother != NULL && strcmp(root->children->brother->name, "DOT") == 0){
 						Symbol p = search_symbolt(root->children->children->subname);
 						Struc s = get_struc(p->stru_name);
 						p = s->type->u.structure;
@@ -251,7 +252,6 @@ void find_type(struct Node* root){
 						}
 					}
 					else{
-						printf("Unknown error\n");
 						root->type = root->children->type;
 					}
 				}
@@ -355,12 +355,8 @@ void fill_symbolt(Symbol symbol){
 		return;	
 	//以上判断没有重复的就在hash table中插入
 	if(symbol_table[index] == NULL){
-		printf("index:%d\nid:%s\n", index,symbol->name);
-		printf("is_para:%d\n", symbol->is_para);
 		symbol_table[index] = symbol;
 	}else{
-		printf("index:%d\nid:%s\n", index,symbol->name);
-		printf("is_para:%d\n", symbol->is_para);
 		symbol->hash_next = symbol_table[index];
 		symbol_table[index] = symbol;
 	}
@@ -379,7 +375,6 @@ Func fill_funct(Func func){
 		func->hash_next = func_table[index];
 		func_table[index] = func;
 	}
-	printf("index:%d\nid:%s\n", index,func->name);
 	return func;
 }
 

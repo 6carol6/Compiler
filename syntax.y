@@ -65,7 +65,11 @@ ExtDef		:	Specifier ExtDecList SEMI {
 				create_tree_node(&$$, "ExtDef", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-		|	error SEMI	{is_show_syntax_tree = 0;}
+//		|	error SEMI	{is_show_syntax_tree = 0;}
+		|	Specifier FunDec error SEMI	{
+				is_show_syntax_tree = 0; 
+				fprintf(stderr, "Error type B at line %d: Incomplete definition of \"%s\"\n", yylineno, $2->children->subname);
+			}
 		;
 ExtDecList	:	VarDec	{
 				create_tree_node(&$$, "ExtDecList", "", 1);
@@ -124,7 +128,10 @@ FunDec		:	ID LP VarList RP	{
 				create_tree_node(&$$, "FunDec", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-		|	error RP	{is_show_syntax_tree = 0;}
+		|	error RP	{
+				is_show_syntax_tree = 0;
+				fprintf(stderr, "Error type B at line %d: syntax error\n", yylineno);
+			}
 		;
 VarList		:	ParamDec COMMA VarList	{
 				create_tree_node(&$$, "VarList", "", 1);
@@ -145,7 +152,7 @@ CompSt		:	LC DefList StmtList RC	{
 				create_tree_node(&$$, "CompSt", "", 1);
 				connect_tree(&$$, 4, $1, $2, $3, $4);
 			}
-//		|	error RC	{is_show_syntax_tree = 0;}
+//		|	error SEMI	{is_show_syntax_tree = 0;}
 		;
 StmtList	:	Stmt StmtList	{
 				create_tree_node(&$$, "StmtList", "", 1);
@@ -189,7 +196,10 @@ Def		:	Specifier DecList SEMI	{
 				create_tree_node(&$$, "Def", "", 1);
 				connect_tree(&$$, 3, $1, $2, $3);
 			}
-		|	error SEMI	{is_show_syntax_tree = 0; }
+		|	error SEMI	{
+				is_show_syntax_tree = 0; 
+				fprintf(stderr, "Error type B at line %d: syntax error\n", yylineno);
+			}
 		;
 DecList		:	Dec	{
 				create_tree_node(&$$, "DecList", "", 1);
@@ -294,8 +304,6 @@ Args		:	Exp COMMA Args	{
 		;
 %%
 yyerror(char* msg){
-	fprintf(stderr, "Error type B at line %d: %s\n", yylineno, msg);
-	is_show_syntax_tree = 0;
 }
 
 int main(int argc, char** argv){
@@ -309,7 +317,7 @@ int main(int argc, char** argv){
 //	yydebug = 1;
 	yyparse();
 	if(is_show_syntax_tree){
-		display_tree(root, 0);
+		//display_tree(root, 0);
 		find_type(root);
 	}
 	return 0;
