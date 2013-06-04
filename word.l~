@@ -33,7 +33,7 @@ id	{letter_}({letter_}|{digit})*
 ";"	{ create_tree_node(&yylval.treeNode, "SEMI", "", 0);return SEMI; }
 ","	{ create_tree_node(&yylval.treeNode, "COMMA", "", 0);return COMMA; }
 "="	{ create_tree_node(&yylval.treeNode, "ASSIGNOP", "", 0);return ASSIGNOP; }
-{relop}	{ create_tree_node(&yylval.treeNode, "RELOP", yytext, 0);return RELOP; }
+{relop}	{ create_tree_node(&yylval.treeNode, "RELOP", "", 0);return RELOP; }
 "+"	{ create_tree_node(&yylval.treeNode, "PLUS", "", 0);return PLUS; }
 "-"	{ create_tree_node(&yylval.treeNode, "MINUS", "", 0);return MINUS; }
 "*"	{ create_tree_node(&yylval.treeNode, "STAR", "", 0);return STAR; }

@@ -12,10 +12,10 @@ typedef struct Operand_* Operand;
 
 extern unsigned int hash_pjw(char *name);
 
-int has_struct;
+int has_struct = 0;
 
 struct Operand_{
-	enum { VARIABLE, CONSTANT, LABEL, TEMP, ARRAY, ADDRESS, POINTER} kind;
+	enum { VARIABLE, CONSTANT, ADDRESS, LABEL, TEMP} kind;
 	union{
 		int var_no;//VARIABLE
 		int value;//CONSTANT

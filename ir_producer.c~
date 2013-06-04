@@ -1,0 +1,136 @@
+#include "def.h"
+#include "stdio.h"
+#include "stdlib.h"
+void operand_print(Operand op){
+	switch(op->kind){
+		case VARIABLE:
+			printf("v%d", op->u.var_no);
+			break;
+		case CONSTANT:
+			printf("#%d", op->u.value);
+			break;
+		case ADDRESS:
+			break;
+		case LABEL:
+			printf("label%d", op->u.var_no);
+			break;
+		default:
+			printf("Operand: What?!\n");
+	}
+}
+//VARIABLE, CONSTANT, ADDRESS, LABEL
+void ircode_print(struct InterCode code){
+	switch(code.kind){
+		case ASSIGN:
+			operand_print(code.u.assign.left);
+			printf(" := ");
+			operand_print(code.u.assign.right);
+			break;
+		case ADD:
+			operand_print(code.u.binop.result);
+			printf(" := ");
+			operand_print(code.u.binop.op1);
+			printf(" + ");
+			operand_print(code.u.binop.op2);
+			break;
+		case SUB:
+			operand_print(code.u.binop.result);
+			printf(" := ");
+			operand_print(code.u.binop.op1);
+			printf(" - ");
+			operand_print(code.u.binop.op2);
+			break;
+		case MUL:
+			operand_print(code.u.binop.result);
+			printf(" := ");
+			operand_print(code.u.binop.op1);
+			printf(" * ");
+			operand_print(code.u.binop.op2);
+			break;
+		case DIVIDE:
+			operand_print(code.u.binop.result);
+			printf(" := ");
+			operand_print(code.u.binop.op1);
+			printf(" / ");
+			operand_print(code.u.binop.op2);
+			break;
+		case LABEL_OP:
+			printf("LABEL ");
+			operand_print(code.u.para);
+			printf(" :");
+			break;
+		case RETURN_OP:
+			printf("RETURN ");
+			operand_print(code.u.para);
+			break;
+		case GOTO:
+			printf("GOTO ");
+			operand_print(code.u.para);
+			break;
+		case IF_OP:
+			printf("IF ");
+			operand_print(code.u.if_var.t1);
+			printf(" %s ", code.u.if_var.relop);
+			operand_print(code.u.if_var.t2);
+			printf(" GOTO ");
+			operand_print(code.u.if_var.label);
+			break;
+		case READ:
+			printf("READ ");
+			operand_print(code.u.para);
+			break;
+		case CALL:
+			operand_print(code.u.call.place);
+			printf(" := CALL ");
+			printf("%s", code.u.call.fun_name);
+			break;
+		case WRITE:
+			printf("WRITE ");
+			operand_print(code.u.para);
+			break;
+		default:
+			printf("IRCode: What?!\n");
+		printf("\n");
+	}
+}
+
+void producer(struct InterCodes* code_head){
+	struct InterCodes* p = code_head;
+	while(p != NULL){
+		ircode_print(p->code);
+		p = p->next;
+	}
+	printf("\n");
+}
+
+int main(){
+	struct InterCodes* head = (struct InterCodes*)malloc(sizeof(struct InterCodes));
+	head->prev = NULL; head->next = NULL;
+	Operand op1 = (Operand)malloc(sizeof(struct Operand_));
+	Operand op2 = (Operand)malloc(sizeof(struct Operand_));
+	Operand op3 = (Operand)malloc(sizeof(struct Operand_));
+	op1->kind = LABEL;
+	op1->u.var_no = 1;
+	op3->kind = VARIABLE;
+	op3->u.var_no = 2;
+	op2->kind = CONSTANT;
+	op2->u.value = 9;
+	head->code.kind = LABEL_OP;
+	head->code.u.para = op1;
+	//head->code.u.binop.op2 = op2;
+	//head->code.u.binop.result = op3;
+	producer(head);
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+

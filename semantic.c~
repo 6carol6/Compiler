@@ -386,6 +386,7 @@ Func fill_funct(Func func){
 int fill_struct(Struc struc){
 	int index = hash_pjw(struc->name);
 	if(struc_table[index] == NULL){
+		printf("struct name: %s", struc->name);
 		struc_table[index] = struc;
 	}else{
 		if(search_symbolt(struc->name) != NULL || get_struc(struc->name) != NULL){

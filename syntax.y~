@@ -316,7 +316,6 @@ int main(int argc, char** argv){
 	yyrestart(f);
 //	yydebug = 1;
 	yyparse();
-	has_struct = 0;
 	if(is_show_syntax_tree){
 		display_tree(root, 0);
 		init_the_funcT();
