@@ -190,6 +190,7 @@ void find_type(struct Node* root){
 				}
 				if(p != NULL)//否则对于没有定义的变量会报段错误
 					root->children->type = p->type;
+
 			}
 			else if(strcmp(root->children->brother->name, "LP") == 0){//函数调用
 				char* name = root->children->subname;
@@ -278,6 +279,7 @@ void find_type(struct Node* root){
 						printf("Error type 7 at line %d: Operands type mismatched\n", p->line_num);
 					}
 				}
+				p->type = p->children->type;//????????????
 			}
 		}
 		else if(strcmp(root->children->name, "INT") == 0){

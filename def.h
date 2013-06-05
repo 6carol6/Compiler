@@ -2,8 +2,8 @@
 #define __DEFINE_H__
 #define MAXN 16384
 #define STACK_MAXN 100
-#define TYPE_INT 0
-#define TYPE_FLOAT 1
+#define TYPE_INT 4
+#define TYPE_FLOAT 8
 typedef struct Type_* Type;
 typedef struct Symbol_* Symbol;
 typedef struct Func_* Func;
@@ -28,7 +28,7 @@ struct ArgList{
 };
 
 struct InterCode{
-	enum { ASSIGN, ADD, SUB, MUL, DIVIDE, LABEL_OP, RETURN_OP, GOTO, IF_OP, READ, CALL, WRITE, ARG, FUNCTION, PARAM}kind;
+	enum { ASSIGN, ADD, SUB, MUL, DIVIDE, LABEL_OP, RETURN_OP, GOTO, IF_OP, READ, CALL, WRITE, ARG, FUNCTION, PARAM, DEC}kind;
 	union{
 		struct { Operand right, left; } assign;
 		struct { Operand result, op1, op2; }binop;
@@ -40,6 +40,10 @@ struct InterCode{
 			Operand place;
 			char* fun_name;
 		}call;
+		struct{
+			Operand op;
+			int size;
+		}array;
 		Operand para;
 		char* function;
 	}u;

@@ -23,8 +23,10 @@ void operand_print(Operand op){
 			break;
 		case ARRAY:
 			fprintf(fp, "v%d", op->u.var_no);
+			break;
 		case POINTER:
-			fprintf(fp, "*v%d", op->u.var_no);
+			fprintf(fp, "*t%d", op->u.var_no);
+			break;
 		default:
 			fprintf(fp, "Operand: What?!\n");
 	}
@@ -110,6 +112,11 @@ void ircode_print(struct InterCode code){
 		case PARAM:
 			fprintf(fp, "PARAM ");
 			operand_print(code.u.para);
+			break;
+		case DEC:
+			fprintf(fp, "DEC ");
+			operand_print(code.u.array.op);
+			fprintf(fp, " %d", code.u.array.size);
 			break;
 		default:
 			fprintf(fp, "IRCode: What?!\n");
