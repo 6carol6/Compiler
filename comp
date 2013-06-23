@@ -1,4 +1,4 @@
 #!/bin/sh
 flex word.l
 bison -d syntax.y
-gcc syntax.tab.c ir_printer.c ir_generator.c semantic.c stack.c -lfl -ly -o parse
+gcc syntax.tab.c optimize.c ir_printer.c ir_generator.c semantic.c stack.c -lfl -ly -o parse

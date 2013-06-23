@@ -7,6 +7,8 @@ int lookup_symbol(char* name);
 Operand new_temp();
 Operand new_label();
 Symbol search_Symbol(char* name);
+void insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next);
+
 struct InterCodes* translate_Exp(struct Node* Exp, Operand place);
 struct InterCodes* translate_Stmt(struct Node* Stmt);
 struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand label_false);
@@ -128,7 +130,6 @@ void init_the_funcT(){//插入READ与WRITE函数
 }
 
 struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
-	printf("Exp\n");
 	struct InterCodes* code_head = NULL;
 	if(strcmp(Exp->children->name, "INT") == 0 || strcmp(Exp->children->name, "FLOAT") == 0){
 		Operand temp = (Operand)malloc(sizeof(struct Operand_));
@@ -166,8 +167,20 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 				code_head->code.u.call.place = place;
 				code_head->code.u.call.fun_name = Exp->children->subname;
 				code_head->prev = NULL; code_head->next = NULL;
+			
+				if(place->kind == POINTER){//*p = CALL function
+					Operand temp = new_temp();
+					code_head->code.u.call.place = temp;
+					struct InterCodes* point = (struct InterCodes *)malloc(sizeof(struct InterCodes));
+					point->code.kind = ASSIGN;
+					point->code.u.assign.left = place;
+					point->code.u.assign.right = temp;
+					point->prev = NULL; point->next = NULL;
+
+					code_head->next = point;
+					point->prev = code_head;
+				}
 			}
-			//这里要考虑如果为*x = CALL FUNCTION的情况，在有参数函数里面已经考虑了~
 
 		}
 		else if(strcmp(Exp->children->brother->brother->name, "Args") == 0){
@@ -214,7 +227,7 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 				code2->code.u.call.fun_name = Exp->children->subname;
 				code2->prev = NULL; code2->next = NULL;
 				
-				if(place->kind == POINTER){
+				if(place->kind == POINTER){//*p = CALL function
 					Operand temp = new_temp();
 					code2->code.u.call.place = temp;
 					struct InterCodes* point = (struct InterCodes *)malloc(sizeof(struct InterCodes));
@@ -611,7 +624,7 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 				code3->next = point;
 				point->prev = code3;
 			}
-			
+
 			//把它们串起来~
 			p = code_head;
 			while(p->next != NULL) p = p->next;
@@ -642,7 +655,6 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 }
 
 struct InterCodes* translate_Stmt(struct Node* Stmt){
-	printf("Stmt\n");
 	struct InterCodes* code_head;
 	if(strcmp(Stmt->children->name, "CompSt") == 0){
 		code_head = translate_CompSt(Stmt->children);
@@ -923,19 +935,40 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 		arg->next = *arg_list;
 		*arg_list = arg;
 	}else{ //Args->Exp COMMA Args1
+		struct ArgList* arg = (struct ArgList*)malloc(sizeof(struct ArgList));
+
 		if(Args->children->type->kind != array){
 			temp1 = new_temp();
 			code_head = translate_Exp(Args->children, temp1);
+
+			if(temp1->kind == ARRAY){//zhe bian jia le yi tuo ,xia mian ye yao jia!
+				temp1->kind = TEMP;
+				struct InterCodes* code1 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
+				Operand temp2 = new_temp();
+				Operand temp3 = (Operand)malloc(sizeof(struct Operand_));
+				temp3->kind = POINTER;
+				temp3->u.var_no = temp1->u.var_no;
+				code1->code.kind = ASSIGN;
+				code1->code.u.assign.left = temp2;
+				code1->code.u.assign.right = temp3;
+
+				struct InterCodes* p = code_head;
+				while(p->next != NULL) p = p->next;
+				p->next = code1;
+				code1->prev = p;
+
+				arg->operand = temp2;
+			}else
+				arg->operand = temp1;
 		}
 		else{
 			Symbol arg_symbol = search_Symbol(Args->children->children->subname);
 			temp1 = (Operand)malloc(sizeof(struct Operand_));
 			temp1->kind = ADDRESS;
 			temp1->u.var_no = arg_symbol->var_no;
+			arg->operand = temp1;
 		}
-		struct ArgList* arg = (struct ArgList*)malloc(sizeof(struct ArgList));
 
-		arg->operand = temp1;
 		arg->next = *arg_list;
 		*arg_list = arg;
 		struct InterCodes* code1;
@@ -951,7 +984,6 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 	return code_head;
 }
 struct InterCodes* translate_ExtDefList(struct Node* ExtDefList){
-	printf("ExtDefList\n");
 	struct InterCodes* code_head = NULL;
 	code_head = translate_ExtDef(ExtDefList->children);
 	if(ExtDefList->children->brother != NULL){
@@ -966,7 +998,6 @@ struct InterCodes* translate_ExtDefList(struct Node* ExtDefList){
 }
 
 struct InterCodes* translate_ExtDef(struct Node* ExtDef){
-	printf("ExtDef\n");
 	struct InterCodes* code_head = NULL;
 	if(strcmp(ExtDef->children->brother->name, "FunDec") == 0){
 		code_head = translate_FunDec(ExtDef->children->brother);
@@ -983,7 +1014,6 @@ struct InterCodes* translate_ExtDef(struct Node* ExtDef){
 }
 
 struct InterCodes* translate_FunDec(struct Node* FunDec){
-	printf("FunDec\n");
 	struct InterCodes* code_head;
 	code_head = (struct InterCodes*)malloc(sizeof(struct InterCodes));
 	code_head->code.kind = FUNCTION;
@@ -1013,7 +1043,6 @@ struct InterCodes* translate_FunDec(struct Node* FunDec){
 }
 
 struct InterCodes* translate_CompSt(struct Node* CompSt){
-	printf("CompSt\n");
 	struct InterCodes* code_head = NULL;
 	if(strcmp(CompSt->children->brother->name, "DefList") == 0)
 		code_head = translate_DefList(CompSt->children->brother);
@@ -1039,7 +1068,6 @@ struct InterCodes* translate_CompSt(struct Node* CompSt){
 }
 
 struct InterCodes* translate_DefList(struct Node* DefList){
-	printf("DefList\n");
 	struct InterCodes* code_head = NULL;
 	code_head = translate_Def(DefList->children);
 
@@ -1062,14 +1090,12 @@ struct InterCodes* translate_DefList(struct Node* DefList){
 }
 
 struct InterCodes* translate_Def(struct Node* Def){
-	printf("Def\n");
 	struct InterCodes* code_head = NULL;
 	code_head = translate_DecList(Def->children->brother);
 	return code_head;
 }
 
 struct InterCodes* translate_DecList(struct Node* DecList){
-	printf("DecList\n");
 	struct InterCodes* code_head = NULL;
 	code_head = translate_Dec(DecList->children);
 
@@ -1088,7 +1114,6 @@ struct InterCodes* translate_DecList(struct Node* DecList){
 }
 
 struct InterCodes* translate_Dec(struct Node* Dec){
-	printf("Dec\n");
 	struct InterCodes* code_head = NULL;
 	if(strcmp(Dec->children->children->name, "ID") == 0){
 		if(Dec->children->brother != NULL && strcmp(Dec->children->brother->name, "ASSIGNOP") == 0){
@@ -1132,7 +1157,6 @@ struct InterCodes* translate_Dec(struct Node* Dec){
 }
 
 struct InterCodes* translate_StmtList(struct Node* StmtList){
-	printf("StmtList\n");
 	struct InterCodes* code_head = NULL;
 	code_head = translate_Stmt(StmtList->children);
 	
@@ -1149,7 +1173,38 @@ struct InterCodes* translate_StmtList(struct Node* StmtList){
 }
 
 void ir_generator(struct Node* root, char* file){
-	struct InterCodes* head = translate_ExtDefList(root->children);
+	head = translate_ExtDefList(root->children);
+	//optimize();
 	if(head!=NULL) 
 		producer(head, file);
+}
+
+void insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next){
+	int i;
+	struct InterCodes* p;
+	p = prev;
+	if(prev == NULL){
+		p = code;
+		if(next == NULL) return;
+		else{
+			while(p->next != NULL)
+				p = p->next;
+			p->next = next;
+			next->prev = p;
+		}
+	}else{
+		p = prev;
+		while(p->next != NULL)
+			p = p->next;
+		p->next = code;
+		code->prev = p;
+		if(next == NULL) return;
+		else{
+			p = code;
+			while(p->next != NULL)
+				p = p->next;
+			p->next = next;
+			next->prev = p;
+		}
+	}
 }

@@ -13,6 +13,7 @@ typedef struct Operand_* Operand;
 extern unsigned int hash_pjw(char *name);
 
 int has_struct;
+struct InterCodes* head;
 
 struct Operand_{
 	enum { VARIABLE, CONSTANT, LABEL, TEMP, ARRAY, ADDRESS, POINTER} kind;
