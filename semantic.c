@@ -236,8 +236,9 @@ void find_type(struct Node* root){
 		}
 		else if(strcmp(root->children->name, "Exp") == 0){
 			if(root->children->type != NULL){//如果不判断，对于未定义的变量会报段错误
-				if(root->children->type->kind == array)
+				if(root->children->type->kind == array){
 					root->type = root->children->type->u.array.elem;
+				}
 				else if(root->children->type->kind == basic)
 					root->type = root->children->type;
 				else{//结构类型

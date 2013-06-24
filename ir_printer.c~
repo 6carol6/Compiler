@@ -22,7 +22,7 @@ void operand_print(Operand op){
 			fprintf(fp, "t%d", op->u.var_no);
 			break;
 		case ARRAY:
-			fprintf(fp, "v%d", op->u.var_no);
+			fprintf(fp, "arrauv%d", op->u.var_no);
 			break;
 		case POINTER:
 			fprintf(fp, "*t%d", op->u.var_no);

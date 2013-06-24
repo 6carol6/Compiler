@@ -7,7 +7,7 @@ int lookup_symbol(char* name);
 Operand new_temp();
 Operand new_label();
 Symbol search_Symbol(char* name);
-void insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next);
+struct InterCodes* insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next);
 
 struct InterCodes* translate_Exp(struct Node* Exp, Operand place);
 struct InterCodes* translate_Stmt(struct Node* Stmt);
@@ -194,13 +194,7 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 				code1->code.u.para = arg_list->operand;
 				code1->prev = NULL; code1->next = NULL;
 				
-				if(code_head == NULL) code_head = code1;
-				else{
-					struct InterCodes* p = code_head;
-					while(p->next != NULL) p = p->next;
-					p->next = code1;
-					code1->prev = p;
-				}
+				code_head = insert_code(code1, code_head, NULL);
 			}else{
 				struct InterCodes* code1 = NULL;
 				struct ArgList* arg = arg_list;
@@ -210,14 +204,7 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 					temp_code->code.kind = ARG;
 					temp_code->code.u.para = arg->operand;
 
-					if(code1 == NULL){
-						code1 = temp_code;
-					}else{
-						struct InterCodes* q = code1;
-						while(q->next != NULL) q = q->next;
-						q->next = temp_code;
-						temp_code->prev = q;
-					}
+					code1 = insert_code(temp_code, code1, NULL);
 					arg = arg->next;
 				}
 
@@ -239,24 +226,7 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 					code2->next = point;
 					point->prev = code2;
 				}
-
-				if(code_head == NULL){
-					code_head = code1;
-					struct InterCodes* p = code_head;
-					while(p->next != NULL) p = p->next;
-					p->next = code2;
-					code2->prev = p;
-				}else{
-					//串起来~
-					struct InterCodes* p = code_head;
-					while(p->next != NULL) p = p->next;
-					p->next = code1;
-					code1->prev = p;
-					p = code1;
-					while(p->next != NULL) p = p->next;
-					p->next = code2;
-					code2->prev = p;
-				}
+				code_head = insert_code(code1, code_head, code2);
 			}
 		}
 	}
@@ -274,10 +244,7 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 		code2->prev = NULL; code2->next = NULL;
 		
 		//把它们串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
+		code_head = insert_code(code2, code_head, NULL);
 	}
 	else if(strcmp(Exp->children->name, "NOT") == 0 || strcmp(Exp->children->brother->name, "RELOP") == 0 || strcmp(Exp->children->brother->name, "AND") == 0 || strcmp(Exp->children->brother->name, "OR") == 0){
 		Operand label1 = new_label();
@@ -313,17 +280,8 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 		code4->prev = NULL; code4->next = NULL;
 		
 		//把它们串起来~
-		code_head->next = code1;
-		code1->prev = code_head;
-		//code1不只一句话
-		struct InterCodes* p = code1;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
-		code2->next = code3;
-		code3->prev = code2;
-		code3->next = code4;
-		code4->prev = code3;
+		code_head = insert_code(code1, code_head, code2);
+		code_head = insert_code(code3, code_head, code4);
 	}
 	else if(Exp->children->brother != NULL && strcmp(Exp->children->brother->name,"LB") == 0){//The usage of array
 		struct Node* p = Exp->children;
@@ -405,12 +363,9 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 				code1->code.u.binop.op1 = temp2;
 				code1->code.u.binop.op2 = right;
 				code1->prev = NULL; code1->next = NULL;
-
-				struct InterCodes* p = code_head;
-				while(p->next != NULL) p = p->next;
-				p->next = code1;
-				code1->prev = p;
-
+				
+				code_head = insert_code(code1, code_head, NULL);
+				
 				if(type->kind != basic){//type->u.array.size
 					temp2 = new_temp();
 
@@ -470,10 +425,8 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 			}
 		}
 		code3->prev = NULL; code3->next = NULL;
-		struct InterCodes* combine = code_head;
-		while(combine->next != NULL) combine = combine->next;
-		combine->next = code3;
-		code3->prev = combine;
+		
+		code_head = insert_code(code3, code_head, NULL);
 	}
 	else if(strcmp(Exp->children->name, "Exp") == 0){//顺序很重要！这个在最后，不然Exp1 RELOP Exp2也被它收了去~
 		if(Exp->children->brother != NULL && strcmp(Exp->children->brother->name, "ASSIGNOP") == 0){//要不要考虑Exp1只能是ID？貌似左值的问题已经在语义分析报过了
@@ -524,11 +477,8 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 					code3->code.kind = ASSIGN;
 					code3->code.u.assign.left = temp1;
 					code3->code.u.assign.right = temp;
-
-					p = code2;
-					while(p->next != NULL) p = p->next;
-					p->next = code3;
-					code3->prev = p;
+					
+					code2 = insert_code(code3, code2, NULL);
 				}else
 					code2 = translate_Exp(Exp->children->brother->brother, temp1);
 			}
@@ -538,16 +488,10 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 				code3->code.u.assign.left = place;
 				code3->code.u.assign.right = temp1;
 				code3->prev = NULL; code3->next = NULL;
-				p = code2;
-				while(p->next != NULL) p = p->next;
-				p->next = code3;
-				code3->prev = p;
+				code2 = insert_code(code3, code2, NULL);
 			}
 			//把它们串起来~
-			p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code2;
-			code2->prev = p;
+			code_head = insert_code(code2, code_head, NULL);
 		}
 		else if(Exp->children->brother != NULL && (strcmp(Exp->children->brother->name, "PLUS") == 0 || strcmp(Exp->children->brother->name, "MINUS") == 0 || strcmp(Exp->children->brother->name, "STAR") == 0 || strcmp(Exp->children->brother->name, "DIV") == 0)){
 			Operand temp1 = new_temp();
@@ -626,29 +570,14 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 			}
 
 			//把它们串起来~
-			p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code2;
-			code2->prev = p;
-			
-			p = code2;
-			while(p->next != NULL) p = p->next;
-			if(code_temp1 != NULL){
-				p->next = code_temp1;
-				code_temp1->prev = p;
-				p = code_temp1;
-			}
-			if(code_temp2 != NULL){
-				p->next = code_temp2;
-				code_temp2->prev = p;
-				p = code_temp2;
-			}
-			p->next = code3;
-			code3->prev = p;
+			code_head = insert_code(code2, code_head, code_temp1);
+			if(code_temp2 != NULL)
+				code_head = insert_code(code_temp2, code_head, code3);
+			else
+				code_head = insert_code(code3, code_head, NULL);
 		}
 	}
 	else if(strcmp(Exp->children->name, "LP") == 0){
-
 		code_head = translate_Exp(Exp->children->brother, place);
 	}
 	return code_head;
@@ -671,10 +600,7 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 		code2->prev = NULL; code2->next = NULL;
 		
 		//串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
+		code_head = insert_code(code2, code_head, NULL);
 	}
 	else if(strcmp(Stmt->children->name, "IF") == 0){
 		Operand label1 = new_label();
@@ -688,12 +614,7 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 		code1->prev = NULL; code1->next = NULL;
 		
 		//串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code_head = insert_code(code1, code_head, code2);
 		
 		if(Stmt->children->brother->brother->brother->brother->brother == NULL){
 			struct InterCodes* code3 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
@@ -701,10 +622,7 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 			code3->code.u.para = label2;
 			code3->prev = NULL; code3->next = NULL;
 			
-			p = code2;
-			while(p->next != NULL) p = p->next;
-			p->next = code3;
-			code3->prev = p;
+			code2 = insert_code(code3, code2, NULL);
 		}else{//如果有ELSE
 			Operand label3 = new_label();	
 			struct InterCodes* code3 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
@@ -724,18 +642,9 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 			code6->code.kind = LABEL_OP;
 			code6->code.u.para = label3;
 			code6->prev = NULL; code6->next = NULL;
-			//串起来~
-			p = code2;
-			while(p->next != NULL) p = p->next;
-			p->next = code3;
-			code3->prev = p;
-			code3->next = code4;
-			code4->prev = code3;
-			code4->next = code5;
-			p = code5;
-			while(p->next != NULL) p = p->next;
-			p->next = code6;
-			code6->prev = code5;
+			
+			code2 = insert_code(code3, code2, code4);
+			code2 = insert_code(code5, code2, code6);
 		}
 	}
 	else if(strcmp(Stmt->children->name, "WHILE") == 0){
@@ -770,20 +679,9 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 		code5->prev = NULL; code5->next = NULL;
 		
 		//串起来~
-		code_head->next = code1;
-		code1->prev = code_head;
-		struct InterCodes* p = code1;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
-		code2->next = code3;
-		code3->prev = code2;
-		p = code3;
-		while(p->next != NULL) p = p->next;
-		p->next = code4;
-		code4->prev = p;
-		code4->next = code5;
-		code5->prev = code4;
+		code_head = insert_code(code1, code_head, code2);
+		code_head = insert_code(code3, code_head, code4);
+		code_head = insert_code(code5, code_head, NULL);
 	}
 	return code_head;
 }
@@ -812,16 +710,8 @@ struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand 
 		code3->prev = NULL; code3->next = NULL;
 		
 		//串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		p = code1;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
-		code2->next = code3;
-		code3->prev = code2;
+		code_head = insert_code(code1, code_head, code2);
+		code_head = insert_code(code3, code_head, NULL);
 	}
 	else if(strcmp(Exp->children->name, "NOT") == 0){
 		code_head = translate_Cond(Exp->children->brother, label_false, label_true);
@@ -838,12 +728,7 @@ struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand 
 		
 		code2 = translate_Cond(Exp->children->brother->brother, label_true, label_false);
 		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code_head = insert_code(code1, code_head, code2);
 	}
 	else if(strcmp(Exp->children->brother, "OR") == 0){
 		Operand label1 = new_label();
@@ -857,12 +742,7 @@ struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand 
 		
 		code2 = translate_Cond(Exp->children->brother->brother, label_true, label_false);
 		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code_head = insert_code(code1, code_head, code2);
 	}
 	else{
 		Operand temp1 = new_temp();
@@ -883,12 +763,7 @@ struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand 
 		code2->code.u.para = label_false;
 		code2->prev = NULL; code2->next = NULL;
 		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code_head = insert_code(code1, code_head, code2);
 	}
 	return code_head;
 }
@@ -914,12 +789,8 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 				code1->code.kind = ASSIGN;
 				code1->code.u.assign.left = temp2;
 				code1->code.u.assign.right = temp3;
-
-				struct InterCodes* p = code_head;
-				while(p->next != NULL) p = p->next;
-				p->next = code1;
-				code1->prev = p;
-
+				
+				code_head = insert_code(code1, code_head, NULL);
 				arg->operand = temp2;
 			}else
 				arg->operand = temp1;
@@ -951,12 +822,9 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 				code1->code.kind = ASSIGN;
 				code1->code.u.assign.left = temp2;
 				code1->code.u.assign.right = temp3;
-
-				struct InterCodes* p = code_head;
-				while(p->next != NULL) p = p->next;
-				p->next = code1;
-				code1->prev = p;
-
+				
+				code_head = insert_code(code1, code_head, NULL);
+				
 				arg->operand = temp2;
 			}else
 				arg->operand = temp1;
@@ -975,10 +843,7 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 		code1 = translate_Args(Args->children->brother->brother, arg_list);
 		if(code_head == NULL) code_head = code1;
 		else{
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code1;
-			code1->prev = p;
+			code_head = insert_code(code1, code_head, NULL);
 		}
 	}
 	return code_head;
@@ -989,10 +854,8 @@ struct InterCodes* translate_ExtDefList(struct Node* ExtDefList){
 	if(ExtDefList->children->brother != NULL){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_ExtDefList(ExtDefList->children->brother);
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1004,10 +867,7 @@ struct InterCodes* translate_ExtDef(struct Node* ExtDef){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_CompSt(ExtDef->children->brother->brother);
 		if(code1 != NULL){
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code1;
-			code1->prev = p;
+			code_head = insert_code(code1, code_head, NULL);
 		}
 	}
 	return code_head;
@@ -1033,10 +893,7 @@ struct InterCodes* translate_FunDec(struct Node* FunDec){
 			code1->code.kind = PARAM;
 			code1->code.u.para = temp;
 			
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code1;
-			code1->prev = p;
+			code_head = insert_code(code1, code_head, NULL);
 		}
 	}
 	return code_head;
@@ -1057,11 +914,7 @@ struct InterCodes* translate_CompSt(struct Node* CompSt){
 	if(strcmp(CompSt->children->brother->brother->name, "StmtList") == 0){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_StmtList(CompSt->children->brother->brother);
-	
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	
 	return code_head;
@@ -1081,10 +934,7 @@ struct InterCodes* translate_DefList(struct Node* DefList){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_DefList(DefList->children->brother);
 		if(code1 == NULL) return code_head;//The defination of the common variable is after the array
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1105,10 +955,7 @@ struct InterCodes* translate_DecList(struct Node* DecList){
 		if(code1 == NULL){
 			return code_head; //The defination of the common variable is after the array???
 		}
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1127,11 +974,8 @@ struct InterCodes* translate_Dec(struct Node* Dec){
 			code2->code.u.assign.left = temp1;
 			code2->code.u.assign.right = temp;
 			code2->prev = NULL; code2->next = NULL;
-
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code2;
-			code2->prev = p;
+			
+			code_head = insert_code(code2, code_head, NULL);
 		}
 	}
 	else if(strcmp(Dec->children->children->name, "VarDec") == 0){
@@ -1164,10 +1008,7 @@ struct InterCodes* translate_StmtList(struct Node* StmtList){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_StmtList(StmtList->children->brother);
 		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1179,33 +1020,33 @@ void ir_generator(struct Node* root, char* file){
 		producer(head, file);
 }
 
-void insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next){
+struct InterCodes* insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next){
 	int i;
 	struct InterCodes* p;
 	p = prev;
 	if(prev == NULL){
 		p = code;
-		if(next == NULL) return;
-		else{
+		if(next != NULL){
 			while(p->next != NULL)
 				p = p->next;
 			p->next = next;
 			next->prev = p;
 		}
+		return code;
 	}else{
 		p = prev;
 		while(p->next != NULL)
 			p = p->next;
 		p->next = code;
 		code->prev = p;
-		if(next == NULL) return;
-		else{
+		if(next != NULL){
 			p = code;
 			while(p->next != NULL)
 				p = p->next;
 			p->next = next;
 			next->prev = p;
-			
+		
 		}
+		return prev;
 	}
 }

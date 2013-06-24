@@ -7,7 +7,7 @@ int lookup_symbol(char* name);
 Operand new_temp();
 Operand new_label();
 Symbol search_Symbol(char* name);
-void insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next);
+struct InterCodes* insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next);
 
 struct InterCodes* translate_Exp(struct Node* Exp, Operand place);
 struct InterCodes* translate_Stmt(struct Node* Stmt);
@@ -23,6 +23,9 @@ struct InterCodes* translate_DefList(struct Node* DefList);
 struct InterCodes* translate_Def(struct Node* Def);
 struct InterCodes* translate_DecList(struct Node* DecList);
 struct InterCodes* translate_Dec(struct Node* Dec);
+
+Operand create_operand(int kind, int var);
+struct InterCodes* create_code(int kind, Operand op1, Operand op2, Operand op3, char* para, int size);
 
 void init_the_funcT();
 
@@ -129,56 +132,109 @@ void init_the_funcT(){//插入READ与WRITE函数
 	}
 }
 
+struct InterCodes* insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next){
+	int i;
+	struct InterCodes* p;
+	p = prev;
+	if(prev == NULL){
+		p = code;
+		if(next != NULL){
+			while(p->next != NULL)
+				p = p->next;
+			p->next = next;
+			next->prev = p;
+		}
+		return code;
+	}else{
+		p = prev;
+		while(p->next != NULL)
+			p = p->next;
+		p->next = code;
+		code->prev = p;
+		if(next != NULL){
+			p = code;
+			while(p->next != NULL)
+				p = p->next;
+			p->next = next;
+			next->prev = p;
+		
+		}
+		return prev;
+	}
+}
+Operand create_operand(int kind, int var){
+	Operand temp = (Operand)malloc(sizeof(struct Operand_));
+	temp->kind = kind;
+	if(kind == CONSTANT)
+		temp->u.value = var;
+	else
+		temp->u.var_no = var;
+
+	return temp;
+}
+struct InterCodes* create_code(int kind, Operand op1, Operand op2, Operand op3, char* para, int size){
+	struct InterCodes* temp = (struct InterCodes *)malloc(sizeof(struct InterCodes));
+	temp->code.kind = kind;
+	if(kind == ASSIGN){
+		temp->code.u.assign.right = op1;
+		temp->code.u.assign.left = op2;
+	}
+	else if(kind == ADD || kind == SUB || kind == MUL || kind == DIVIDE){
+		temp->code.u.binop.result = op1;
+		temp->code.u.binop.op1 = op2;
+		temp->code.u.binop.op2 = op3;
+	}
+	else if(kind == IF_OP){
+		temp->code.u.if_var.t1 = op1;
+		temp->code.u.if_var.t2 = op2;
+		temp->code.u.if_var.label = op3;
+		temp->code.u.if_var.relop = para;
+	}
+	else if(kind == CALL){
+		temp->code.u.call.place = op1;
+		temp->code.u.call.fun_name = para;
+	}
+	else if(kind == FUNCTION){
+		temp->code.u.function = para;
+	}
+	else if(kind == DEC){
+		temp->code.u.array.op = op1;
+		temp->code.u.array.size = size;
+	}
+	else if(kind == LABEL_OP || kind == RETURN_OP || kind == GOTO || kind == READ || kind == WRITE || kind == ARG || kind == PARAM){
+		temp->code.u.para = op1;
+	}
+	temp->next = NULL;temp->prev = NULL;
+	return temp;
+}
 struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 	struct InterCodes* code_head = NULL;
 	if(strcmp(Exp->children->name, "INT") == 0 || strcmp(Exp->children->name, "FLOAT") == 0){
-		Operand temp = (Operand)malloc(sizeof(struct Operand_));
-		temp->kind = CONSTANT;
-		temp->u.value = get_value(Exp->children);
-		code_head = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code_head->code.kind = ASSIGN;
-		code_head->code.u.assign.left = place;
-		code_head->code.u.assign.right = temp;
-		code_head->prev = NULL; code_head->next = NULL;
+		Operand temp = create_operand(CONSTANT, get_value(Exp->children));
+		code_head = create_code(ASSIGN, temp, place, NULL, NULL, 0);
 	}
 	else if(strcmp(Exp->children->name, "ID") == 0){
 		if(Exp->children->brother == NULL){//说明查变量表
 			if(place == NULL) return NULL;
-			Operand temp = (Operand)malloc(sizeof(struct Operand_));
-			temp->kind = VARIABLE;
-			temp->u.var_no = lookup_symbol(Exp->children->subname);
-			code_head = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-			code_head->code.kind = ASSIGN;
-			code_head->code.u.assign.left = place;
-			code_head->code.u.assign.right = temp;
-			code_head->prev = NULL; code_head->next = NULL;
+			Operand temp = create_operand(VARIABLE, lookup_symbol(Exp->children->subname));
+			code_head = create_code(ASSIGN, temp, place, NULL, NULL, 0);
 		}
 		//这里考虑函数~
 		else if(strcmp(Exp->children->brother->brother->name, "RP") == 0){
 			//无参数的函数
 			if(strcmp(Exp->children->subname, "read") == 0){
-				code_head = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-				code_head->code.kind = READ;
-				code_head->code.u.para = place;
-				code_head->prev = NULL; code_head->next = NULL;
+				code_head = create_code(READ, place, NULL, NULL, NULL, 0);
 			}else{
-				code_head = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-				code_head->code.kind = CALL;
-				code_head->code.u.call.place = place;
-				code_head->code.u.call.fun_name = Exp->children->subname;
-				code_head->prev = NULL; code_head->next = NULL;
-			
-				if(place->kind == POINTER){//*p = CALL function
+				if(place == NULL) place = new_temp();
+				code_head = create_code(CALL, place, NULL, NULL, Exp->children->subname, 0);
+
+				if(place != NULL && place->kind == POINTER){//*p = CALL function
 					Operand temp = new_temp();
 					code_head->code.u.call.place = temp;
-					struct InterCodes* point = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-					point->code.kind = ASSIGN;
-					point->code.u.assign.left = place;
-					point->code.u.assign.right = temp;
-					point->prev = NULL; point->next = NULL;
+					struct InterCodes* point;
+					point = create_code(ASSIGN, temp, place, NULL, NULL, 0);
 
-					code_head->next = point;
-					point->prev = code_head;
+					code_head = insert_code(point, code_head, NULL);
 				}
 			}
 
@@ -189,144 +245,65 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 			code_head = translate_Args(Exp->children->brother->brother, &arg_list);
 
 			if(strcmp(Exp->children->subname, "write") == 0){
-				struct InterCodes* code1 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-				code1->code.kind = WRITE;
-				code1->code.u.para = arg_list->operand;
-				code1->prev = NULL; code1->next = NULL;
-				
-				if(code_head == NULL) code_head = code1;
-				else{
-					struct InterCodes* p = code_head;
-					while(p->next != NULL) p = p->next;
-					p->next = code1;
-					code1->prev = p;
-				}
+				struct InterCodes* code1 = create_code(WRITE, arg_list->operand, NULL, NULL, NULL, 0);
+				code_head = insert_code(code1, code_head, NULL);
 			}else{
 				struct InterCodes* code1 = NULL;
 				struct ArgList* arg = arg_list;
 				while(arg != NULL){
-					struct InterCodes* temp_code = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-					temp_code->prev = NULL; temp_code->next = NULL;
-					temp_code->code.kind = ARG;
-					temp_code->code.u.para = arg->operand;
-
-					if(code1 == NULL){
-						code1 = temp_code;
-					}else{
-						struct InterCodes* q = code1;
-						while(q->next != NULL) q = q->next;
-						q->next = temp_code;
-						temp_code->prev = q;
-					}
+					struct InterCodes* temp_code = create_code(ARG, arg->operand, NULL, NULL, NULL, 0);
+					code1 = insert_code(temp_code, code1, NULL);
 					arg = arg->next;
 				}
+				if(place == NULL) place = new_temp();
+				struct InterCodes* code2 = create_code(CALL, place, NULL, NULL, Exp->children->subname, 0);
 
-				struct InterCodes* code2 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-				code2->code.kind = CALL;
-				code2->code.u.call.place = place;
-				code2->code.u.call.fun_name = Exp->children->subname;
-				code2->prev = NULL; code2->next = NULL;
-				
-				if(place->kind == POINTER){//*p = CALL function
+				if(place != NULL && place->kind == POINTER){//*p = CALL function
 					Operand temp = new_temp();
 					code2->code.u.call.place = temp;
-					struct InterCodes* point = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-					point->code.kind = ASSIGN;
-					point->code.u.assign.left = place;
-					point->code.u.assign.right = temp;
-					point->prev = NULL; point->next = NULL;
+					struct InterCodes* point;
+					point = create_code(ASSIGN, temp, place, NULL, NULL, 0);
 
 					code2->next = point;
 					point->prev = code2;
 				}
-
-				if(code_head == NULL){
-					code_head = code1;
-					struct InterCodes* p = code_head;
-					while(p->next != NULL) p = p->next;
-					p->next = code2;
-					code2->prev = p;
-				}else{
-					//串起来~
-					struct InterCodes* p = code_head;
-					while(p->next != NULL) p = p->next;
-					p->next = code1;
-					code1->prev = p;
-					p = code1;
-					while(p->next != NULL) p = p->next;
-					p->next = code2;
-					code2->prev = p;
-				}
+				code_head = insert_code(code1, code_head, code2);
 			}
 		}
 	}
 	else if(strcmp(Exp->children->name, "MINUS") == 0){
 		Operand temp1 = new_temp();
 		code_head = translate_Exp(Exp->children->brother, temp1);
-		struct InterCodes* code2 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		Operand temp2 = (Operand)malloc(sizeof(struct Operand_));
-		temp2->kind = CONSTANT;
-		temp2->u.value = 0;
-		code2->code.kind = SUB;
-		code2->code.u.binop.result = place;
-		code2->code.u.binop.op1 = temp2;
-		code2->code.u.binop.op2 = temp1;
-		code2->prev = NULL; code2->next = NULL;
+		Operand temp2 = create_operand(CONSTANT, 0);
+		struct InterCodes* code2;
+		code2 = create_code(SUB, place, temp2, temp1, NULL, 0);
 		
 		//把它们串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
+		code_head = insert_code(code2, code_head, NULL);
 	}
 	else if(strcmp(Exp->children->name, "NOT") == 0 || strcmp(Exp->children->brother->name, "RELOP") == 0 || strcmp(Exp->children->brother->name, "AND") == 0 || strcmp(Exp->children->brother->name, "OR") == 0){
 		Operand label1 = new_label();
 		Operand label2 = new_label();
-		Operand zero = (Operand)malloc(sizeof(struct Operand_));
-		zero->kind = CONSTANT;
-		zero->u.value = 0;
-		code_head = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code_head->code.kind = ASSIGN;
-		code_head->code.u.assign.left = place;
-		code_head->code.u.assign.right = zero;
-		code_head->prev = NULL; code_head->next = NULL;
-		
+		Operand zero = create_operand(CONSTANT, 0);
+
+		code_head = create_code(ASSIGN, zero, place, NULL, NULL, 0);
+
 		struct InterCodes *code1, *code2, *code3, *code4;
 		code1 = translate_Cond(Exp, label1, label2);
-		code2 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code2->code.kind = LABEL_OP;
-		code2->code.u.para = label1;
-		code2->prev = NULL; code2->next = NULL;
-			
-		Operand one = (Operand)malloc(sizeof(struct Operand_));
-		one->kind = CONSTANT;
-		one->u.value = 1;
-		code3 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code3->code.kind = ASSIGN;
-		code3->code.u.assign.left = place;
-		code3->code.u.assign.right = one;
-		code3->prev = NULL; code3->next = NULL;
-		
-		code4 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code4->code.kind = LABEL_OP;
-		code4->code.u.para = label2;
-		code4->prev = NULL; code4->next = NULL;
-		
+		code2 = create_code(LABEL_OP, label1, NULL, NULL, NULL, 0);
+
+		Operand one = create_operand(CONSTANT, 1);
+		code3 = create_code(ASSIGN, one, place, NULL, NULL, 0);
+
+		code4 = create_code(LABEL_OP, label2, NULL, NULL, NULL, 0);
+
 		//把它们串起来~
-		code_head->next = code1;
-		code1->prev = code_head;
-		//code1不只一句话
-		struct InterCodes* p = code1;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
-		code2->next = code3;
-		code3->prev = code2;
-		code3->next = code4;
-		code4->prev = code3;
+		code_head = insert_code(code1, code_head, code2);
+		code_head = insert_code(code3, code_head, code4);
 	}
 	else if(Exp->children->brother != NULL && strcmp(Exp->children->brother->name,"LB") == 0){//The usage of array
 		struct Node* p = Exp->children;
+		struct InterCodes* code_temp = NULL;
 		int dimension = 0;
 		while(strcmp(p->name, "ID") != 0){
 			dimension++;
@@ -348,28 +325,25 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 			}
 			temp1 = new_temp();
 
-			Operand right = (Operand)malloc(sizeof(struct Operand_));
-			right->kind = CONSTANT;
+			Operand right;
 			if(type->kind == basic)
-				right->u.value = type->u.basic;
+				right = create_operand(CONSTANT, 4);//type->u.basic if float = 4 as it
 			else
-				right->u.value = type->u.array.size;
+				right = create_operand(CONSTANT, type->u.array.size);
 
 			if(code_head == NULL){
-				Operand left = (Operand)malloc(sizeof(struct Operand_));
-				if(strcmp(p->brother->brother->children->name, "ID") == 0){
-					left->kind = VARIABLE;
-					left->u.var_no = lookup_symbol(p->brother->brother->children->subname);
-				}else{
-					left->kind = CONSTANT;
-					left->u.var_no = atoi(p->brother->brother->children->subname);
+				Operand left;
+				if(strcmp(p->brother->brother->children->name, "ID") == 0)
+					left = create_operand(VARIABLE, lookup_symbol(p->brother->brother->children->subname));
+				else if(strcmp(p->brother->brother->children->name, "Exp") == 0){
+					left = new_temp();
+					code_temp = translate_Exp(p->brother->brother, left);
 				}
-				code_head = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-				code_head->code.kind = MUL;
-				code_head->code.u.binop.result = temp1;
-				code_head->code.u.binop.op1 = left;
-				code_head->code.u.binop.op2 = right;
-				code_head->prev = NULL; code_head->next = NULL;
+				else
+					left = create_operand(CONSTANT, atoi(p->brother->brother->children->subname));
+
+				code_head = create_code(MUL, temp1, left, right, NULL, 0);
+				if(code_temp != NULL) code_head = insert_code(code_head, code_temp, NULL);
 
 				if(type->kind != basic){//type->u.array.size
 					is_1d = 0;
@@ -379,38 +353,24 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 					for(k = 0; k < layer_num-1; k++){
 						q = q->children;
 					}
-					Operand prev_layer = (Operand)malloc(sizeof(struct Operand_));
-					if(strcmp(q->brother->brother->children->name, "ID") == 0){
-						prev_layer->kind = VARIABLE;
-						prev_layer->u.var_no = lookup_symbol(q->brother->brother->children->subname);
-					}else{
-						prev_layer->kind = CONSTANT;
-						prev_layer->u.value = atoi(q->brother->brother->children->subname);
-					}
-					struct InterCodes* code2 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-					code2->code.kind = ADD;
-					code2->code.u.binop.result = temp2;
-					code2->code.u.binop.op1 = temp1;
-					code2->code.u.binop.op2 = prev_layer;
-					code2->prev = NULL; code2->next = NULL;
+					Operand prev_layer;// = (Operand)malloc(sizeof(struct Operand_));
+					if(strcmp(q->brother->brother->children->name, "ID") == 0)
+						prev_layer = create_operand(VARIABLE, lookup_symbol(q->brother->brother->children->subname));
+					else
+						prev_layer = create_operand(CONSTANT, atoi(q->brother->brother->children->subname));
+
+					struct InterCodes* code2;
+					code2 = create_code(ADD, temp2, temp1, prev_layer, NULL, 0);
 
 					code_head->next = code2;
 					code2->prev = code_head;
 				}
 
 			}else{
-				struct InterCodes* code1 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-				code1->code.kind = MUL;
-				code1->code.u.binop.result = temp1;
-				code1->code.u.binop.op1 = temp2;
-				code1->code.u.binop.op2 = right;
-				code1->prev = NULL; code1->next = NULL;
+				struct InterCodes* code1 = create_code(MUL, temp1, temp2, right, NULL, 0);
 
-				struct InterCodes* p = code_head;
-				while(p->next != NULL) p = p->next;
-				p->next = code1;
-				code1->prev = p;
-
+				code_head = insert_code(code1, code_head, NULL);
+				
 				if(type->kind != basic){//type->u.array.size
 					temp2 = new_temp();
 
@@ -419,21 +379,14 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 					for(k = 0; k < layer_num-1; k++){
 						q = q->children;
 					}
-					Operand prev_layer = (Operand)malloc(sizeof(struct Operand_));
-					if((q->brother->brother->children->name, "ID") == 0){
-						prev_layer->kind = VARIABLE;
-						prev_layer->u.var_no = lookup_symbol(q->brother->brother->children->subname);
-					}else{
-						prev_layer->kind = CONSTANT;
-						prev_layer->u.value = atoi(q->brother->brother->children->subname);
-					}
+					Operand prev_layer;
+					if((q->brother->brother->children->name, "ID") == 0)
+						prev_layer = create_operand(VARIABLE, lookup_symbol(q->brother->brother->children->subname));
+					else
+						prev_layer = create_operand(CONSTANT, atoi(q->brother->brother->children->subname));
 
-					struct InterCodes* code2 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-					code2->code.kind = ADD;
-					code2->code.u.binop.result = temp2;
-					code2->code.u.binop.op1 = temp1;
-					code2->code.u.binop.op2 = prev_layer;
-					code2->prev = NULL; code2->next = NULL;
+					struct InterCodes* code2;
+					code2 = create_code(ADD, temp2, temp1, prev_layer, NULL, 0);
 
 					code1->next = code2;
 					code2->prev = code1;
@@ -443,37 +396,25 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 			type = type->u.array.elem;
 			layer_num--;
 		}
-		Operand base = (Operand)malloc(sizeof(struct Operand_));
+		Operand base;
 		if(array->is_para == 1)
-			base->kind = ARRAY;
+			base = create_operand(ARRAY, array->var_no);
 		else
-			base->kind = ADDRESS;
-		base->u.var_no = array->var_no;
-		
-		struct InterCodes* code3 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
+			base = create_operand(ADDRESS, array->var_no);
+
+		struct InterCodes* code3;
 		place->kind = ARRAY;//Important!
 		if(temp2 != NULL){
-			code3->code.kind = ADD;
-			code3->code.u.binop.result = place;
-			code3->code.u.binop.op1 = base;
-			code3->code.u.binop.op2 = temp1;
+			code3 = create_code(ADD, place, base, temp1, NULL, 0);
 		}else{
 			if(!is_1d){
-				code3->code.kind = ASSIGN;
-				code3->code.u.assign.left = place;
-				code3->code.u.assign.right = base;
+				code3 = create_code(ASSIGN, base, place, NULL, NULL, 0);
 			}else{
-				code3->code.kind = ADD;
-				code3->code.u.binop.result = place;
-				code3->code.u.binop.op1 = base;
-				code3->code.u.binop.op2 = temp1;
+				code3 = create_code(ADD, place, base, temp1, NULL, 0);
 			}
 		}
-		code3->prev = NULL; code3->next = NULL;
-		struct InterCodes* combine = code_head;
-		while(combine->next != NULL) combine = combine->next;
-		combine->next = code3;
-		code3->prev = combine;
+		
+		code_head = insert_code(code3, code_head, NULL);
 	}
 	else if(strcmp(Exp->children->name, "Exp") == 0){//顺序很重要！这个在最后，不然Exp1 RELOP Exp2也被它收了去~
 		if(Exp->children->brother != NULL && strcmp(Exp->children->brother->name, "ASSIGNOP") == 0){//要不要考虑Exp1只能是ID？貌似左值的问题已经在语义分析报过了
@@ -485,69 +426,43 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 
 			if(Exp->children->children->type->kind == basic){//left:id
 				code_head = translate_Exp(Exp->children->brother->brother, temp);
-				if(Exp->children->brother->brother->type->kind == array){//right:array
+				if(temp->kind == ARRAY){//right:array
 					Operand change = temp;
 					int no = temp->u.var_no;
 					change->kind = TEMP;
-					temp = (Operand)malloc(sizeof(struct Operand_));
-					temp->u.var_no = no;
-					temp->kind = POINTER;
+					temp = create_operand(POINTER, no);
 				}
-				code2 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-				temp1 = (Operand)malloc(sizeof(struct Operand_));
-				temp1->kind = VARIABLE;
-				temp1->u.var_no = lookup_symbol(Exp->children->children->subname);
-				code2->code.kind = ASSIGN;
-				code2->code.u.assign.left = temp1;
-				code2->code.u.assign.right = temp;
-				code2->prev = NULL; code2->next = NULL;
+				temp1 = create_operand(VARIABLE, lookup_symbol(Exp->children->children->subname));
+				code2 = create_code(ASSIGN, temp, temp1, NULL, NULL, 0);
 			}else{//left:array
 				temp1 = new_temp();
 				code_head = translate_Exp(Exp->children, temp1);
 				Operand change = temp1;
 				int no = temp1->u.var_no;
 				change->kind = TEMP;
-				temp1 = (Operand)malloc(sizeof(struct Operand_));
-				temp1->u.var_no = no;
-				temp1->kind = POINTER;
+				temp1 = create_operand(POINTER, no);
 
-				if(Exp->children->brother->brother->type->kind == array){//right:array
-					temp = new_temp();
-					code2 = translate_Exp(Exp->children->brother->brother, temp);
+				temp = new_temp();
+				code2 = translate_Exp(Exp->children->brother->brother, temp);
+				if(temp->kind == ARRAY){	//right:array	
 					Operand change = temp;
 					int no = temp->u.var_no;
 					change->kind = TEMP;
-					temp = (Operand)malloc(sizeof(struct Operand_));
-					temp->u.var_no = no;
-					temp->kind = POINTER;
-					struct InterCodes* code3 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-					code3->code.kind = ASSIGN;
-					code3->code.u.assign.left = temp1;
-					code3->code.u.assign.right = temp;
-
-					p = code2;
-					while(p->next != NULL) p = p->next;
-					p->next = code3;
-					code3->prev = p;
+					temp = create_operand(POINTER, no);
+					Operand temp3 = new_temp();
+					struct InterCodes* code_temp = create_code(ASSIGN, temp, temp3, NULL, NULL, 0);
+					struct InterCodes* code3 = create_code(ASSIGN, temp3, temp1, NULL, NULL, 0);
+					
+					code2 = insert_code(code_temp, code2, code3);
 				}else
 					code2 = translate_Exp(Exp->children->brother->brother, temp1);
 			}
 			if(place != NULL){
-				struct InterCodes* code3 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-				code3->code.kind = ASSIGN;
-				code3->code.u.assign.left = place;
-				code3->code.u.assign.right = temp1;
-				code3->prev = NULL; code3->next = NULL;
-				p = code2;
-				while(p->next != NULL) p = p->next;
-				p->next = code3;
-				code3->prev = p;
+				struct InterCodes* code3 = create_code(ASSIGN, temp1, place, NULL, NULL, 0);
+				code2 = insert_code(code3, code2, NULL);
 			}
 			//把它们串起来~
-			p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code2;
-			code2->prev = p;
+			code_head = insert_code(code2, code_head, NULL);
 		}
 		else if(Exp->children->brother != NULL && (strcmp(Exp->children->brother->name, "PLUS") == 0 || strcmp(Exp->children->brother->name, "MINUS") == 0 || strcmp(Exp->children->brother->name, "STAR") == 0 || strcmp(Exp->children->brother->name, "DIV") == 0)){
 			Operand temp1 = new_temp();
@@ -563,33 +478,17 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 				Operand change = temp1;
 				int no = temp1->u.var_no;
 				change->kind = TEMP;
-				temp1 = (Operand)malloc(sizeof(struct Operand_));
-				temp1->kind = POINTER;
-				temp1->u.var_no = no;
-
+				temp1 = create_operand(POINTER, no);
 				temp3 = new_temp();
-				code_temp1 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-				code_temp1->code.kind = ASSIGN;
-				code_temp1->code.u.assign.left = temp3;
-				code_temp1->code.u.assign.right = temp1;
-				code_temp1->prev = NULL; code_temp1->next = NULL;
-
-
+				code_temp1 = create_code(ASSIGN, temp1, temp3, NULL, NULL, 0);
 			}
 			if(temp2->kind == ARRAY){
 				Operand change = temp2;
 				int no = temp2->u.var_no;
 				change->kind = TEMP;
-				temp2 = (Operand)malloc(sizeof(struct Operand_));
-				temp2->kind = POINTER;
-				temp2->u.var_no = no;
-
+				temp2 = create_operand(POINTER, no);
 				temp4 = new_temp();
-				code_temp2 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-				code_temp2->code.kind = ASSIGN;
-				code_temp2->code.u.assign.left = temp4;
-				code_temp2->code.u.assign.right = temp2;
-				code_temp2->prev = NULL; code_temp2->next = NULL;
+				code_temp2 = create_code(ASSIGN, temp2, temp4, NULL, NULL, 0);
 			}
 			struct InterCodes* code3 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
 			if(strcmp(Exp->children->brother->name, "PLUS") == 0)
@@ -615,40 +514,21 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 			if(place->kind == POINTER){
 				Operand temp = new_temp();
 				code3->code.u.call.place = temp;
-				struct InterCodes* point = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-				point->code.kind = ASSIGN;
-				point->code.u.assign.left = place;
-				point->code.u.assign.right = temp;
-				point->prev = NULL; point->next = NULL;
+				struct InterCodes* point = create_code(ASSIGN, temp, place, NULL, NULL, 0);
 
 				code3->next = point;
 				point->prev = code3;
 			}
 
 			//把它们串起来~
-			p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code2;
-			code2->prev = p;
-			
-			p = code2;
-			while(p->next != NULL) p = p->next;
-			if(code_temp1 != NULL){
-				p->next = code_temp1;
-				code_temp1->prev = p;
-				p = code_temp1;
-			}
-			if(code_temp2 != NULL){
-				p->next = code_temp2;
-				code_temp2->prev = p;
-				p = code_temp2;
-			}
-			p->next = code3;
-			code3->prev = p;
+			code_head = insert_code(code2, code_head, code_temp1);
+			if(code_temp2 != NULL)
+				code_head = insert_code(code_temp2, code_head, code3);
+			else
+				code_head = insert_code(code3, code_head, NULL);
 		}
 	}
 	else if(strcmp(Exp->children->name, "LP") == 0){
-
 		code_head = translate_Exp(Exp->children->brother, place);
 	}
 	return code_head;
@@ -665,16 +545,10 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 	else if(strcmp(Stmt->children->name, "RETURN") == 0){
 		Operand temp1 = new_temp();
 		code_head = translate_Exp(Stmt->children->brother, temp1);
-		struct InterCodes* code2 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code2->code.kind = RETURN_OP;
-		code2->code.u.para = temp1;
-		code2->prev = NULL; code2->next = NULL;
-		
+		struct InterCodes* code2 = create_code(RETURN_OP, temp1, NULL, NULL, NULL, 0);
+
 		//串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
+		code_head = insert_code(code2, code_head, NULL);
 	}
 	else if(strcmp(Stmt->children->name, "IF") == 0){
 		Operand label1 = new_label();
@@ -682,60 +556,27 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 		code_head = translate_Cond(Stmt->children->brother->brother, label1, label2);
 		struct InterCodes* code2;
 		code2 = translate_Stmt(Stmt->children->brother->brother->brother->brother);
-		struct InterCodes* code1 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code1->code.kind = LABEL_OP;
-		code1->code.u.para = label1;
-		code1->prev = NULL; code1->next = NULL;
+		struct InterCodes* code1 = create_code(LABEL_OP, label1, NULL, NULL, NULL, 0);
 		
 		//串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code_head = insert_code(code1, code_head, code2);
 		
 		if(Stmt->children->brother->brother->brother->brother->brother == NULL){
-			struct InterCodes* code3 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-			code3->code.kind = LABEL_OP;
-			code3->code.u.para = label2;
-			code3->prev = NULL; code3->next = NULL;
+			struct InterCodes* code3 = create_code(LABEL_OP, label2, NULL, NULL, NULL, 0);
 			
-			p = code2;
-			while(p->next != NULL) p = p->next;
-			p->next = code3;
-			code3->prev = p;
+			code2 = insert_code(code3, code2, NULL);
 		}else{//如果有ELSE
 			Operand label3 = new_label();	
-			struct InterCodes* code3 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-			code3->code.kind = GOTO;
-			code3->code.u.para = label3;
-			code3->prev = NULL; code3->next = NULL;
+			struct InterCodes* code3 = create_code(GOTO, label3, NULL, NULL, NULL, 0);
 
-			struct InterCodes* code4;
-			code4 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-			code4->code.kind = LABEL_OP;
-			code4->code.u.para = label2;
-			code4->prev = NULL; code4->next = NULL;
+			struct InterCodes* code4 = create_code(LABEL_OP, label2, NULL, NULL, NULL, 0);
 
 			struct InterCodes* code5;
 			code5 = translate_Stmt(Stmt->children->brother->brother->brother->brother->brother->brother);
-			struct InterCodes* code6 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-			code6->code.kind = LABEL_OP;
-			code6->code.u.para = label3;
-			code6->prev = NULL; code6->next = NULL;
-			//串起来~
-			p = code2;
-			while(p->next != NULL) p = p->next;
-			p->next = code3;
-			code3->prev = p;
-			code3->next = code4;
-			code4->prev = code3;
-			code4->next = code5;
-			p = code5;
-			while(p->next != NULL) p = p->next;
-			p->next = code6;
-			code6->prev = code5;
+			struct InterCodes* code6 = create_code(LABEL_OP, label3, NULL, NULL, NULL, 0);
+			
+			code2 = insert_code(code3, code2, code4);
+			code2 = insert_code(code5, code2, code6);
 		}
 	}
 	else if(strcmp(Stmt->children->name, "WHILE") == 0){
@@ -745,45 +586,18 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 		
 		struct InterCodes *code1, *code2, *code3, *code4, *code5;
 		
-		code_head = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code_head->code.kind = LABEL_OP;
-		code_head->code.u.para = label1;
-		code_head->prev = NULL; code_head->next = NULL;
+		code_head = create_code(LABEL_OP, label1, NULL, NULL, NULL, 0);
 		
 		code1 = translate_Cond(Stmt->children->brother->brother, label2, label3);
-		
-		code2 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code2->code.kind = LABEL_OP;
-		code2->code.u.para = label2;
-		code2->prev = NULL; code2->next = NULL;
-		
-		code3 = translate_Stmt(Stmt->children->brother->brother->brother->brother);
-		
-		code4 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code4->code.kind = GOTO;
-		code4->code.u.para = label1;
-		code4->prev = NULL; code4->next = NULL;
-		
-		code5 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code5->code.kind = LABEL_OP;
-		code5->code.u.para = label3;
-		code5->prev = NULL; code5->next = NULL;
+		code2 = create_code(LABEL_OP, label2, NULL, NULL, NULL, 0);
+		code3 = translate_Stmt(Stmt->children->brother->brother->brother->brother);	
+		code4 = create_code(GOTO, label1, NULL, NULL, NULL, 0);
+		code5 = create_code(LABEL_OP, label3, NULL, NULL, NULL, 0);
 		
 		//串起来~
-		code_head->next = code1;
-		code1->prev = code_head;
-		struct InterCodes* p = code1;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
-		code2->next = code3;
-		code3->prev = code2;
-		p = code3;
-		while(p->next != NULL) p = p->next;
-		p->next = code4;
-		code4->prev = p;
-		code4->next = code5;
-		code5->prev = code4;
+		code_head = insert_code(code1, code_head, code2);
+		code_head = insert_code(code3, code_head, code4);
+		code_head = insert_code(code5, code_head, NULL);
 	}
 	return code_head;
 }
@@ -793,102 +607,76 @@ struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand 
 	if(strcmp(Exp->children->brother->name, "RELOP") == 0){
 		Operand temp1 = new_temp();
 		Operand temp2 = new_temp();
-		
+		Operand temp3 = NULL;
+		Operand temp4 = NULL;
+		struct InterCodes* code_temp1 = NULL;
+		struct InterCodes* code_temp2 = NULL;
 		code_head = translate_Exp(Exp->children, temp1);
 		struct InterCodes *code1, *code2, *code3;
 		
 		code1 = translate_Exp(Exp->children->brother->brother, temp2);
-		code2 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code2->code.kind = IF_OP;
-		code2->code.u.if_var.t1 = temp1;
-		code2->code.u.if_var.t2 = temp2;
-		code2->code.u.if_var.relop = Exp->children->brother->subname;
-		code2->code.u.if_var.label = label_true;
-		code2->prev = NULL; code2->next = NULL;
 
-		code3 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-		code3->code.kind = GOTO;
-		code3->code.u.para = label_false;
-		code3->prev = NULL; code3->next = NULL;
-		
+		if(temp1->kind == ARRAY){
+			Operand change = temp1;
+			int no = temp1->u.var_no;
+			change->kind = TEMP;
+			temp1 = create_operand(POINTER, no);
+			temp3 = new_temp();
+			code_temp1 = create_code(ASSIGN, temp1, temp3, NULL, NULL, 0);
+		}
+		if(temp2->kind == ARRAY){
+			Operand change = temp2;
+			int no = temp2->u.var_no;
+			change->kind = TEMP;
+			temp2 = create_operand(POINTER, no);
+			temp4 = new_temp();
+			code_temp2 = create_code(ASSIGN, temp2, temp4, NULL, NULL, 0);
+		}
+		if(temp3 == NULL) temp3 = temp1;
+		if(temp4 == NULL) temp4 = temp2;
+		code2 = create_code(IF_OP, temp3, temp4, label_true, Exp->children->brother->subname, 0);
+		code3 = create_code(GOTO, label_false, NULL, NULL, NULL, 0);
 		//串起来~
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		p = code1;
-		while(p->next != NULL) p = p->next;
-		p->next = code2;
-		code2->prev = p;
-		code2->next = code3;
-		code3->prev = code2;
+		code_head = insert_code(code1, code_head, code_temp1);
+		if(code_temp2 != NULL){
+			code_head = insert_code(code_temp2, code_head, code2);
+			code_head = insert_code(code3, code_head, NULL);
+		}
+		else
+			code_head = insert_code(code2, code_head, code3);
 	}
 	else if(strcmp(Exp->children->name, "NOT") == 0){
 		code_head = translate_Cond(Exp->children->brother, label_false, label_true);
 	}
-	else if(strcmp(Exp->children->brother, "AND") == 0){
+	else if(strcmp(Exp->children->brother->name, "AND") == 0){
 		Operand label1 = new_label();
 		struct InterCodes *code1, *code2;
+
 		code_head = translate_Cond(Exp->children, label1, label_false);
-		
-		code1 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code1->code.kind = LABEL_OP;
-		code1->code.u.para = label1;
-		code1->prev = NULL; code1->next = NULL;
-		
+		code1 = create_code(GOTO, label1, NULL, NULL, NULL, 0);
 		code2 = translate_Cond(Exp->children->brother->brother, label_true, label_false);
 		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code_head = insert_code(code1, code_head, code2);
 	}
-	else if(strcmp(Exp->children->brother, "OR") == 0){
+	else if(strcmp(Exp->children->brother->name, "OR") == 0){
 		Operand label1 = new_label();
 		struct InterCodes *code1, *code2;
+
 		code_head = translate_Cond(Exp->children, label_true, label1);
-		
-		code1 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code1->code.kind = LABEL_OP;
-		code1->code.u.para = label1;
-		code1->prev = NULL; code1->next = NULL;
-		
+		code1 = create_code(LABEL_OP, label1, NULL, NULL, NULL, 0);
 		code2 = translate_Cond(Exp->children->brother->brother, label_true, label_false);
 		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code_head = insert_code(code1, code_head, code2);
 	}
 	else{
 		Operand temp1 = new_temp();
-		Operand zero = (Operand)malloc(sizeof(struct Operand_));
-		zero->kind = CONSTANT;
-		zero->u.value = 0;
+		Operand zero = create_operand(CONSTANT, 0);
 		code_head = translate_Exp(Exp, temp1);
 		struct InterCodes *code1, *code2;
-		code1 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code1->code.kind = IF_OP;
-		code1->code.u.if_var.t1 = temp1;
-		code1->code.u.if_var.t2 = zero;
-		code1->code.u.if_var.label = label_true;
-		code1->prev = NULL; code1->next = NULL;
-		
-		code2 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code2->code.kind = GOTO;
-		code2->code.u.para = label_false;
-		code2->prev = NULL; code2->next = NULL;
-		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
-		code1->next = code2;
-		code2->prev = code1;
+		code1 = create_code(IF_OP, temp1, zero, label_true, "!=", 0);	
+		code2 = create_code(GOTO, label_false, NULL, NULL, NULL, 0);
+
+		code_head = insert_code(code1, code_head, code2);
 	}
 	return code_head;
 }
@@ -906,29 +694,18 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 			code_head = translate_Exp(Args->children, temp1);
 			if(temp1->kind == ARRAY){//zhe bian jia le yi tuo ,xia mian ye yao jia!
 				temp1->kind = TEMP;
-				struct InterCodes* code1 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
 				Operand temp2 = new_temp();
-				Operand temp3 = (Operand)malloc(sizeof(struct Operand_));
-				temp3->kind = POINTER;
-				temp3->u.var_no = temp1->u.var_no;
-				code1->code.kind = ASSIGN;
-				code1->code.u.assign.left = temp2;
-				code1->code.u.assign.right = temp3;
-
-				struct InterCodes* p = code_head;
-				while(p->next != NULL) p = p->next;
-				p->next = code1;
-				code1->prev = p;
-
+				Operand temp3 = create_operand(POINTER, temp1->u.var_no);
+				struct InterCodes* code1 = create_code(ASSIGN, temp3, temp2, NULL, NULL, 0);
+				
+				code_head = insert_code(code1, code_head, NULL);
 				arg->operand = temp2;
 			}else
 				arg->operand = temp1;
 		}
 		else{
 			Symbol arg_symbol = search_Symbol(Args->children->children->subname);
-			temp1 = (Operand)malloc(sizeof(struct Operand_));
-			temp1->kind = ADDRESS;
-			temp1->u.var_no = arg_symbol->var_no;
+			Operand temp1 = create_operand(ADDRESS, arg_symbol->var_no);
 			arg->operand = temp1;
 		}
 
@@ -943,29 +720,20 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 
 			if(temp1->kind == ARRAY){//zhe bian jia le yi tuo ,xia mian ye yao jia!
 				temp1->kind = TEMP;
-				struct InterCodes* code1 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
 				Operand temp2 = new_temp();
-				Operand temp3 = (Operand)malloc(sizeof(struct Operand_));
-				temp3->kind = POINTER;
-				temp3->u.var_no = temp1->u.var_no;
+				Operand temp3 = create_operand(POINTER, temp1->u.var_no);
+				struct InterCodes* code1 = create_code(ASSIGN, temp3, temp2, NULL, NULL, 0);
 				code1->code.kind = ASSIGN;
-				code1->code.u.assign.left = temp2;
-				code1->code.u.assign.right = temp3;
-
-				struct InterCodes* p = code_head;
-				while(p->next != NULL) p = p->next;
-				p->next = code1;
-				code1->prev = p;
-
+				
+				code_head = insert_code(code1, code_head, NULL);
+				
 				arg->operand = temp2;
 			}else
 				arg->operand = temp1;
 		}
 		else{
 			Symbol arg_symbol = search_Symbol(Args->children->children->subname);
-			temp1 = (Operand)malloc(sizeof(struct Operand_));
-			temp1->kind = ADDRESS;
-			temp1->u.var_no = arg_symbol->var_no;
+			temp1 = create_operand(ADDRESS, arg_symbol->var_no);
 			arg->operand = temp1;
 		}
 
@@ -975,10 +743,7 @@ struct InterCodes* translate_Args(struct Node* Args, struct ArgList** arg_list){
 		code1 = translate_Args(Args->children->brother->brother, arg_list);
 		if(code_head == NULL) code_head = code1;
 		else{
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code1;
-			code1->prev = p;
+			code_head = insert_code(code1, code_head, NULL);
 		}
 	}
 	return code_head;
@@ -989,10 +754,8 @@ struct InterCodes* translate_ExtDefList(struct Node* ExtDefList){
 	if(ExtDefList->children->brother != NULL){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_ExtDefList(ExtDefList->children->brother);
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1004,39 +767,24 @@ struct InterCodes* translate_ExtDef(struct Node* ExtDef){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_CompSt(ExtDef->children->brother->brother);
 		if(code1 != NULL){
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code1;
-			code1->prev = p;
+			code_head = insert_code(code1, code_head, NULL);
 		}
 	}
 	return code_head;
 }
 
 struct InterCodes* translate_FunDec(struct Node* FunDec){
-	struct InterCodes* code_head;
-	code_head = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-	code_head->code.kind = FUNCTION;
-	code_head->code.u.function = FunDec->children->subname;
-	code_head->prev = NULL; code_head->next = NULL;
-	
+	struct InterCodes* code_head = create_code(FUNCTION, NULL, NULL, NULL, FunDec->children->subname, 0);
+
 	if(strcmp(FunDec->children->brother->brother->name, "VarList") == 0){//带参数的函数
 		Func function = lookup_func(FunDec->children->subname);
 		Symbol p = function->para;
 		while(p != NULL && p->is_para == 1){
-			struct InterCodes* code1 = (struct InterCodes*)malloc(sizeof(struct InterCodes));
-			Operand temp = (Operand)malloc(sizeof(struct Operand_));
-			temp->kind = VARIABLE;
-			temp->u.var_no = p->var_no;
+			Operand temp = create_operand(VARIABLE, p->var_no);
+			struct InterCodes* code1 = create_code(PARAM, temp, NULL, NULL, NULL, 0);
 			p = p->stack_next;
 			
-			code1->code.kind = PARAM;
-			code1->code.u.para = temp;
-			
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code1;
-			code1->prev = p;
+			code_head = insert_code(code1, code_head, NULL);
 		}
 	}
 	return code_head;
@@ -1057,11 +805,7 @@ struct InterCodes* translate_CompSt(struct Node* CompSt){
 	if(strcmp(CompSt->children->brother->brother->name, "StmtList") == 0){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_StmtList(CompSt->children->brother->brother);
-	
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	
 	return code_head;
@@ -1081,10 +825,7 @@ struct InterCodes* translate_DefList(struct Node* DefList){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_DefList(DefList->children->brother);
 		if(code1 == NULL) return code_head;//The defination of the common variable is after the array
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1105,10 +846,7 @@ struct InterCodes* translate_DecList(struct Node* DecList){
 		if(code1 == NULL){
 			return code_head; //The defination of the common variable is after the array???
 		}
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1119,19 +857,16 @@ struct InterCodes* translate_Dec(struct Node* Dec){
 		if(Dec->children->brother != NULL && strcmp(Dec->children->brother->name, "ASSIGNOP") == 0){
 			Operand temp = new_temp();
 			code_head = translate_Exp(Dec->children->brother->brother, temp);
-			struct InterCodes* code2 = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-			Operand temp1 = (Operand)malloc(sizeof(struct Operand_));
-			temp1->kind = VARIABLE;
-			temp1->u.var_no = lookup_symbol(Dec->children->children->subname);
-			code2->code.kind = ASSIGN;
-			code2->code.u.assign.left = temp1;
-			code2->code.u.assign.right = temp;
-			code2->prev = NULL; code2->next = NULL;
+			if(temp->kind == ARRAY){
+					Operand change = temp;
+					int no = temp->u.var_no;
+					change->kind = TEMP;
+					temp = create_operand(POINTER, no);
+			}
+			Operand temp1 = create_operand(VARIABLE, lookup_symbol(Dec->children->children->subname));
+			struct InterCodes* code2 = create_code(ASSIGN, temp, temp1, NULL, NULL, 0);
 
-			struct InterCodes* p = code_head;
-			while(p->next != NULL) p = p->next;
-			p->next = code2;
-			code2->prev = p;
+			code_head = insert_code(code2, code_head, NULL);
 		}
 	}
 	else if(strcmp(Dec->children->children->name, "VarDec") == 0){
@@ -1143,15 +878,8 @@ struct InterCodes* translate_Dec(struct Node* Dec){
 			size = size * temp;
 			p = p->children;
 		}
-
-		Operand temp = (Operand)malloc(sizeof(struct Operand_));
-		temp->kind = ARRAY;
-		temp->u.var_no = lookup_symbol(p->subname);
-		code_head = (struct InterCodes *)malloc(sizeof(struct InterCodes));
-		code_head->code.kind = DEC;
-		code_head->code.u.array.op = temp;
-		code_head->code.u.array.size = size*4;
-		code_head->prev = NULL; code_head->next = NULL;
+		Operand temp = create_operand(ARRAY, lookup_symbol(p->subname));
+		code_head = create_code(DEC, temp, NULL, NULL, NULL, size*4);
 	}
 	return code_head;
 }
@@ -1164,10 +892,7 @@ struct InterCodes* translate_StmtList(struct Node* StmtList){
 		struct InterCodes* code1 = NULL;
 		code1 = translate_StmtList(StmtList->children->brother);
 		
-		struct InterCodes* p = code_head;
-		while(p->next != NULL) p = p->next;
-		p->next = code1;
-		code1->prev = p;
+		code_head = insert_code(code1, code_head, NULL);
 	}
 	return code_head;
 }
@@ -1177,34 +902,4 @@ void ir_generator(struct Node* root, char* file){
 	//optimize();
 	if(head!=NULL) 
 		producer(head, file);
-}
-
-void insert_code(struct InterCodes* code, struct InterCodes* prev, struct InterCodes* next){
-	int i;
-	struct InterCodes* p;
-	p = prev;
-	if(prev == NULL){
-		p = code;
-		if(next == NULL) return;
-		else{
-			while(p->next != NULL)
-				p = p->next;
-			p->next = next;
-			next->prev = p;
-		}
-	}else{
-		p = prev;
-		while(p->next != NULL)
-			p = p->next;
-		p->next = code;
-		code->prev = p;
-		if(next == NULL) return;
-		else{
-			p = code;
-			while(p->next != NULL)
-				p = p->next;
-			p->next = next;
-			next->prev = p;
-		}
-	}
 }

@@ -318,7 +318,7 @@ int main(int argc, char** argv){
 	yyparse();
 	has_struct = 0;
 	if(is_show_syntax_tree){
-		//display_tree(root, 0);
+		display_tree(root, 0);
 		init_the_funcT();
 		find_type(root);
 		if(!has_struct)

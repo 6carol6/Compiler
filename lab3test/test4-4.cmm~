@@ -29,7 +29,7 @@ int main()
 	{
 		while(l < 4)
 		{
-			temp1[l] = m3[j][l];
+			temp1[1] = m3[j][l];
 			l = l + 1;
 		}
 		l = 0;
