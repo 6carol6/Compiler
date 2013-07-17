@@ -1,5 +1,10 @@
+int a(int w, int z){
+	write(w);
+	write(z);
+	return 4;
+}
 int main(){
-	int a[3];
-	int t = a[0+1];
+	int b = 4;
+	a(1, 2);
 	return 0;
 }

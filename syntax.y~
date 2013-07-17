@@ -321,8 +321,10 @@ int main(int argc, char** argv){
 		display_tree(root, 0);
 		init_the_funcT();
 		find_type(root);
-		if(!has_struct)
+		if(!has_struct){
 			ir_generator(root, argv[2]);
+			obj_generator(head, argv[2]);
+		}
 		else
 			printf("Can not translate the code: Contain structure and function parameters of structure type!\n");
 	}

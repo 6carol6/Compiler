@@ -223,7 +223,14 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 		else if(strcmp(Exp->children->brother->brother->name, "RP") == 0){
 			//无参数的函数
 			if(strcmp(Exp->children->subname, "read") == 0){
-				code_head = create_code(READ, place, NULL, NULL, NULL, 0);
+				if(place->kind == POINTER){
+					Operand temp_p = new_temp();
+					code_head = create_code(READ, temp_p, NULL, NULL, NULL, 0);
+					struct InterCodes* code1 = create_code(ASSIGN, temp_p, place, NULL, NULL, 0);
+					code_head = insert_code(code1, code_head, NULL);
+				}else{
+					code_head = create_code(READ, place, NULL, NULL, NULL, 0);
+				}
 			}else{
 				if(place == NULL) place = new_temp();
 				code_head = create_code(CALL, place, NULL, NULL, Exp->children->subname, 0);
@@ -275,11 +282,27 @@ struct InterCodes* translate_Exp(struct Node* Exp, Operand place){
 		Operand temp1 = new_temp();
 		code_head = translate_Exp(Exp->children->brother, temp1);
 		Operand temp2 = create_operand(CONSTANT, 0);
+		Operand temp4 = NULL;
 		struct InterCodes* code2;
-		code2 = create_code(SUB, place, temp2, temp1, NULL, 0);
-		
-		//把它们串起来~
-		code_head = insert_code(code2, code_head, NULL);
+		if(temp1->kind == ARRAY){
+			Operand change = temp1;
+			int no = temp1->u.var_no;
+			change->kind = TEMP;
+			temp1 = create_operand(POINTER, no);
+			temp4 = new_temp();
+			struct InterCodes* code4 = create_code(ASSIGN, temp1, temp4, NULL, NULL, 0);
+			code_head = insert_code(code4, code_head, NULL);
+		}
+		if(temp4 == NULL) temp4 = temp1;
+		if(place->kind == POINTER){
+			Operand temp3 = new_temp();
+			code2 = create_code(SUB, temp3, temp2, temp4, NULL, 0);
+			struct InterCodes* code3 = create_code(ASSIGN, temp3, place, NULL, NULL, 0);
+			code_head = insert_code(code2, code_head, code3);
+		}else{
+			code2 = create_code(SUB, place, temp2, temp4, NULL, 0);
+			code_head = insert_code(code2, code_head, NULL);
+		}
 	}
 	else if(strcmp(Exp->children->name, "NOT") == 0 || strcmp(Exp->children->brother->name, "RELOP") == 0 || strcmp(Exp->children->brother->name, "AND") == 0 || strcmp(Exp->children->brother->name, "OR") == 0){
 		Operand label1 = new_label();
@@ -604,7 +627,7 @@ struct InterCodes* translate_Stmt(struct Node* Stmt){
 
 struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand label_false){
 	struct InterCodes* code_head;
-	if(strcmp(Exp->children->brother->name, "RELOP") == 0){
+	if(Exp->children->brother != NULL && strcmp(Exp->children->brother->name, "RELOP") == 0){
 		Operand temp1 = new_temp();
 		Operand temp2 = new_temp();
 		Operand temp3 = NULL;
@@ -648,17 +671,17 @@ struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand 
 	else if(strcmp(Exp->children->name, "NOT") == 0){
 		code_head = translate_Cond(Exp->children->brother, label_false, label_true);
 	}
-	else if(strcmp(Exp->children->brother->name, "AND") == 0){
+	else if(Exp->children->brother != NULL && strcmp(Exp->children->brother->name, "AND") == 0){
 		Operand label1 = new_label();
 		struct InterCodes *code1, *code2;
 
 		code_head = translate_Cond(Exp->children, label1, label_false);
-		code1 = create_code(GOTO, label1, NULL, NULL, NULL, 0);
+		code1 = create_code(LABEL_OP, label1, NULL, NULL, NULL, 0);
 		code2 = translate_Cond(Exp->children->brother->brother, label_true, label_false);
 		
 		code_head = insert_code(code1, code_head, code2);
 	}
-	else if(strcmp(Exp->children->brother->name, "OR") == 0){
+	else if(Exp->children->brother != NULL && strcmp(Exp->children->brother->name, "OR") == 0){
 		Operand label1 = new_label();
 		struct InterCodes *code1, *code2;
 
@@ -670,13 +693,16 @@ struct InterCodes* translate_Cond(struct Node* Exp, Operand label_true, Operand 
 	}
 	else{
 		Operand temp1 = new_temp();
+		Operand temp2 = new_temp();
 		Operand zero = create_operand(CONSTANT, 0);
 		code_head = translate_Exp(Exp, temp1);
-		struct InterCodes *code1, *code2;
-		code1 = create_code(IF_OP, temp1, zero, label_true, "!=", 0);	
+		struct InterCodes *code1, *code2, *code3;
+		code3 = create_code(ASSIGN, zero, temp2, NULL, NULL, 0);
+		code1 = create_code(IF_OP, temp1, temp2, label_true, "!=", 0);
 		code2 = create_code(GOTO, label_false, NULL, NULL, NULL, 0);
 
-		code_head = insert_code(code1, code_head, code2);
+		code_head = insert_code(code3, code_head, code1);
+		code_head = insert_code(code2, code_head, NULL);
 	}
 	return code_head;
 }
@@ -900,6 +926,6 @@ struct InterCodes* translate_StmtList(struct Node* StmtList){
 void ir_generator(struct Node* root, char* file){
 	head = translate_ExtDefList(root->children);
 	//optimize();
-	if(head!=NULL) 
-		producer(head, file);
+	//if(head!=NULL) 
+		//producer(head, file);
 }

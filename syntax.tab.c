@@ -2423,11 +2423,13 @@ int main(int argc, char** argv){
 	yyparse();
 	has_struct = 0;
 	if(is_show_syntax_tree){
-		display_tree(root, 0);
+		//display_tree(root, 0);
 		init_the_funcT();
 		find_type(root);
-		if(!has_struct)
+		if(!has_struct){
 			ir_generator(root, argv[2]);
+			obj_generator(head, argv[2]);
+		}
 		else
 			printf("Can not translate the code: Contain structure and function parameters of structure type!\n");
 	}

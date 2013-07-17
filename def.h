@@ -9,12 +9,19 @@ typedef struct Symbol_* Symbol;
 typedef struct Func_* Func;
 typedef struct Struc_* Struc;
 typedef struct Operand_* Operand;
-
+typedef struct SPOFFSET_* SPOFFSET;
 extern unsigned int hash_pjw(char *name);
 
 int has_struct;
 struct InterCodes* head;
+//LAB4
+struct SPOFFSET_{
+	Operand op;
+	int offset;
+	SPOFFSET next;
+};
 
+//LAB3
 struct Operand_{
 	enum { VARIABLE, CONSTANT, LABEL, TEMP, ARRAY, ADDRESS, POINTER} kind;
 	union{
@@ -55,6 +62,7 @@ struct InterCodes {
 	struct InterCodes *prev, *next;
 };
 
+//LAB2
 struct Type_{
 	enum {basic, array, structure}kind;
 	union{
