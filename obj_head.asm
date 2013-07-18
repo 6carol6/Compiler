@@ -18,3 +18,4 @@ write:
 	syscall
 	move $v0, $0
 	jr $ra
+
